@@ -7,13 +7,10 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 
-app.use(express.static(path.join(__dirname, '../client/public')));
+app.use(express.static(path.join(__dirname, '../client/html')));
+app.use(express.static(path.join(__dirname, '../client/js')));
+app.use(express.static(path.join(__dirname, '../client/css')));
 app.use(express.static(path.join(__dirname, '../client')));
-
-app.use((req, res, next) => {
-  console.log(req.url);  // Log the requested path
-  next();
-});
 
 app.get('/', (req, res) => {
     res.render('index.html');
