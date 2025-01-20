@@ -1,8 +1,6 @@
 const socket = io();
-const canvas = document.createElement('canvas');
+const canvas = document.getElementsByClassName('gameCanvas')[0];
 const ctx = canvas.getContext('2d');
-document.body.appendChild(canvas);
-console.log("canvas created!");
 
 canvas.width = 800;
 canvas.height = 600;

@@ -18,6 +18,11 @@ app.get('/', (req, res) => {
 
 let players = {}
 
+/*setInterval( function() {
+  var date = new Date().toString();
+  io.emit( 'message', date.toString() );
+}, 1000 );*/
+
 // Handle socket connections
 io.on('connection', (socket) => {
   console.log(`Player connected: ${socket.id}`);
@@ -46,6 +51,12 @@ io.on('connection', (socket) => {
       delete players[socket.id];
       io.emit('playerDisconnected', socket.id);
   });
+  // handling chat
+  socket.on('chat message', (data) =>{
+    console.log('emiting: ' + data);
+    io.emit('chat message', data); // do wszystkich
+    //socket.emit('chat message', data); tylko do połączonego
+})
 });
 
 server.listen(3000, () => {
