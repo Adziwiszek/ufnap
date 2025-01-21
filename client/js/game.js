@@ -1,4 +1,5 @@
-const socket = io();
+import socket from '/socket.js';
+
 const canvas = document.getElementsByClassName('gameCanvas')[0];
 const ctx = canvas.getContext('2d');
 

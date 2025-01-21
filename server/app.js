@@ -58,7 +58,7 @@ io.on('connection', (socket) => {
     //socket.emit('chat message', data); tylko do połączonego
 })
 });
-
+  
 server.listen(3000, () => {
   var host = server.address().address;
   var port = server.address().port;

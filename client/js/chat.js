@@ -1,5 +1,6 @@
+import socket from '/socket.js';
+
 window.addEventListener('load', () => {       
-    var socket = io();
     /*socket.on('message', function(data) {
         var t = document.getElementById('time');
         t.innerHTML = data;
