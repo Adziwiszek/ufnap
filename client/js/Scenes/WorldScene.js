@@ -1,7 +1,5 @@
 import socket from './../socket.js';
 
-const worldWidth = 1000;
-const worldHeight = 1000;
 
 class WorldScene extends Phaser.Scene {
     player;
@@ -17,12 +15,14 @@ class WorldScene extends Phaser.Scene {
     }
 
     create () {
+        this.worldWidth = 1000;
+        this.worldHeight = 1000;
         this.players = {};
         this.playersSprites = {};
         this.myID = null; 
 
         this.cursors = this.input.keyboard.createCursorKeys();
-        this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
+        this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);
 
         this.initSocketEvents();
     }
@@ -62,20 +62,34 @@ class WorldScene extends Phaser.Scene {
         if (this.playersSprites[id]) {
             this.cameras.main.startFollow(this.playersSprites[id]);
             //this.cameras.main.setZoom(2);
-            this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
+            this.cameras.main.setBounds(0, 0, this.worldWidth, this.worldHeight);
         } else {
             console.warn(`Sprite not found for player ${id}`);
         }
+    }
+
+    updateWorldSize(height, width) {
+        this.worldHeight = height;
+        this.worldWidth = width;
+        this.cameras.main.setBounds(0, 0, 
+            this.worldWidth, this.worldHeight);
+        this.physics.world.setBounds(0, 0, 
+            this.worldWidth, this.worldHeight);
     }
 
     initSocketEvents() {
         socket.emit('client ready');
         socket.on('init message', (message) => {
             if(message.id) {
-                console.log('welcome!');
                 this.myID = message.id;
                 this.playersSprites[this.myID] = this.addPlayer(0x7eb7ed);
                 this.focusCamera(this.myID);
+            }
+            if(message.worldHeight && message.worldWidth) {
+                this.updateWorldSize(
+                    message.worldHeight,
+                    message.worldWidth
+                );
             }
         })
         

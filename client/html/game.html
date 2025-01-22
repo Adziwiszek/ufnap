@@ -10,14 +10,14 @@
 </head>
 
 <body>
-    <!-- <div>
-        <input type='text' id='txtmessage' />
-        <button id='btsend'>Wyślij</button>
-        <div id='messages'></div>
+    <div id="container">
+        <div id="chatWindow">
+            <input type='text' id='txtmessage' />
+            <button id='btsend'>Wyślij</button>
+            <div id='messages'></div>
+        </div>
+        <div id="gameCanvas"></div>
     </div>
-    <div>
-        <canvas class="gameCanvas"></canvas>
-    </div> -->
     <script src="http://localhost:3000/socket.io/socket.io.js"></script>
     <script src="socket.js" defer type="module"></script>
     <script src="game.js" defer type="module"></script>

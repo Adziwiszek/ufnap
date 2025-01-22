@@ -23,7 +23,7 @@ let players = {}
   io.emit( 'message', date.toString() );
 }, 1000 );*/
 
-const worldWidth = 1000;
+const worldWidth = 2000;
 const worldHeight = 1000;
 
 // Handle socket connections
@@ -33,7 +33,11 @@ io.on('connection', (socket) => {
   // Initialize player
   players[socket.id] = { x: 100, y: 100 };
   socket.on('client ready', () => {
-    io.to(socket.id).emit('init message', {id: socket.id})
+    io.to(socket.id).emit('init message', {
+      id: socket.id,
+      worldWidth: worldWidth,
+      worldHeight: worldHeight,
+    })
   });
   socket.emit('currentPlayers', players); // Send current players
   socket.broadcast.emit('newPlayer', { id: socket.id, x: 100, y: 100 });
