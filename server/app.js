@@ -29,6 +29,7 @@ io.on('connection', (socket) => {
 
   // Initialize player
   players[socket.id] = { x: 100, y: 100 };
+  io.to(socket.id).emit('init message', {id: socket.id})
   socket.emit('currentPlayers', players); // Send current players
   socket.broadcast.emit('newPlayer', { id: socket.id, x: 100, y: 100 });
 
@@ -41,7 +42,6 @@ io.on('connection', (socket) => {
       if (direction === 'right') player.x += 5;
       if (direction === 'up') player.y -= 5;
       if (direction === 'down') player.y += 5;
-
       io.emit('playerMoved', { id: socket.id, x: player.x, y: player.y });
   });
 
@@ -56,7 +56,11 @@ io.on('connection', (socket) => {
     console.log('emiting: ' + data);
     io.emit('chat message', data); // do wszystkich
     //socket.emit('chat message', data); tylko do połączonego
-})
+  })
+  // handling player updates
+  setInterval(() => {
+    io.emit('update players', players);
+  }, 1000/30);
 });
   
 server.listen(3000, () => {
