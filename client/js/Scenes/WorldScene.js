@@ -1,8 +1,7 @@
 import socket from './../socket.js';
 
-const players = {};
-const playersSprites = {};
-let myID = null;
+const worldWidth = 1000;
+const worldHeight = 1000;
 
 class WorldScene extends Phaser.Scene {
     player;
@@ -17,9 +16,15 @@ class WorldScene extends Phaser.Scene {
 
     }
 
-    create ()
-    {
+    create () {
+        this.players = {};
+        this.playersSprites = {};
+        this.myID = null; 
+
         this.cursors = this.input.keyboard.createCursorKeys();
+        this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
+
+        this.initSocketEvents();
     }
 
     update(time, dt) {
@@ -35,9 +40,9 @@ class WorldScene extends Phaser.Scene {
             socket.emit('move', 'down');
         }
        
-        for(let id in players) {
-            const sp = playersSprites[id];
-            const player = players[id];
+        for(let id in this.players) {
+            const sp = this.playersSprites[id];
+            const player = this.players[id];
             if(sp) {
                 sp.setPosition(player.x, player.y);
             }
@@ -45,69 +50,92 @@ class WorldScene extends Phaser.Scene {
     }
 
     addPlayer(tint=0xf24f44) {
-        let newPlayer = this.add.sprite(200, 200, 'player');
+        let newPlayer = this.physics.add
+            .sprite(200, 200, 'player')
         newPlayer.setScale(0.1);
         newPlayer.setTint(tint);
+        newPlayer.setCollideWorldBounds(true);
         return newPlayer;
     }
-}
 
-socket.on('init message', (message) => {
-    if(message.id) {
-        myID = message.id;
-        playersSprites[myID] = WorldScene.instance.addPlayer(0x7eb7ed);
-    }
-})
-
-// Handle server updates
-socket.on('currentPlayers', (serverPlayers) => {
-    // Clearing old players
-    for(let id in players) {
-        delete players[id];
-    }
-    // Reassigning new players from server
-    for(let id in serverPlayers) {
-        players[id] = {x: serverPlayers.x, y: serverPlayers.y};
-    }
-    // Object.assign(players, serverPlayers);
-});
-
-socket.on('update players', (serverPlayers) => {
-    for(let id in serverPlayers) {
-        if (!playersSprites[id]) {
-            playersSprites[id] = WorldScene.instance.addPlayer();
-        }
-        players[id] = serverPlayers[id];
-        playersSprites[id].setPosition(players[id].x, players[id].y);
-    }
-});
-
-socket.on('newPlayer', (player) => {
-    players[player.id] = { x: player.x, y: player.y};
-    playersSprites[player.id] = WorldScene.instance.addPlayer();
-});
-
-socket.on('playerMoved', ({ id, x, y }) => {
-    if (players[id]) {
-        // console.log('player with id + ' + id + ' moved');
-        players[id].x = x;
-        players[id].y = y;
-        const sprite = playersSprites[id];
-        if (sprite) {
-            sprite.setPosition(x, y);
+    focusCamera(id) {
+        if (this.playersSprites[id]) {
+            this.cameras.main.startFollow(this.playersSprites[id]);
+            //this.cameras.main.setZoom(2);
+            this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
         } else {
             console.warn(`Sprite not found for player ${id}`);
         }
     }
-});
 
-socket.on('playerDisconnected', (id) => {
-    const sprite = playersSprites[id];
-    if (sprite) {
-        sprite.destroy();
+    initSocketEvents() {
+        socket.emit('client ready');
+        socket.on('init message', (message) => {
+            if(message.id) {
+                console.log('welcome!');
+                this.myID = message.id;
+                this.playersSprites[this.myID] = this.addPlayer(0x7eb7ed);
+                this.focusCamera(this.myID);
+            }
+        })
+        
+        socket.on('currentPlayers', (serverPlayers) => {
+            // Clearing old players
+            for(let id in this.players) {
+                delete this.players[id];
+            }
+            // Reassigning new players from server
+            for(let id in serverPlayers) {
+                this.players[id] = {
+                    x: serverPlayers.x,
+                    y: serverPlayers.y
+                };
+                if (!this.playersSprites[id]) {
+                    this.playersSprites[id] = this.addPlayer();
+                }
+            }
+        });
+        
+        socket.on('update players', (serverPlayers) => {
+            for(let id in serverPlayers) {
+                if (!this.playersSprites[id]) {
+                    this.playersSprites[id] = this.addPlayer();
+                }
+                this.players[id] = serverPlayers[id];
+                this.playersSprites[id].setPosition(
+                    this.players[id].x,
+                    this.players[id].y
+                );
+            }
+        });
+        
+        socket.on('newPlayer', (player) => {
+            this.players[player.id] = { x: player.x, y: player.y};
+            this.playersSprites[player.id] = this.addPlayer();
+        });
+        
+        socket.on('playerMoved', ({ id, x, y }) => {
+            if (this.players[id]) {
+                this.players[id].x = x;
+                this.players[id].y = y;
+                const sprite = this.playersSprites[id];
+                if (sprite) {
+                    sprite.setPosition(x, y);
+                } else {
+                    console.warn(`Sprite not found for player ${id}`);
+                }
+            }
+        });
+        
+        socket.on('playerDisconnected', (id) => {
+            const sprite = this.playersSprites[id];
+            if (sprite) {
+                sprite.destroy();
+            }
+            delete this.players[id];
+            delete this.playersSprites[id];
+        });
     }
-    delete players[id];
-    delete playersSprites[id];
-});
+}
 
 export default WorldScene;

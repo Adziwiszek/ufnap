@@ -23,13 +23,18 @@ let players = {}
   io.emit( 'message', date.toString() );
 }, 1000 );*/
 
+const worldWidth = 1000;
+const worldHeight = 1000;
+
 // Handle socket connections
 io.on('connection', (socket) => {
-  console.log(`Player connected: ${socket.id}`);
-
+  // console.log(`Player connected: ${socket.id}`);
+  
   // Initialize player
   players[socket.id] = { x: 100, y: 100 };
-  io.to(socket.id).emit('init message', {id: socket.id})
+  socket.on('client ready', () => {
+    io.to(socket.id).emit('init message', {id: socket.id})
+  });
   socket.emit('currentPlayers', players); // Send current players
   socket.broadcast.emit('newPlayer', { id: socket.id, x: 100, y: 100 });
 
@@ -42,6 +47,12 @@ io.on('connection', (socket) => {
       if (direction === 'right') player.x += 5;
       if (direction === 'up') player.y -= 5;
       if (direction === 'down') player.y += 5;
+      // checking if player went out of bounds
+      player.x = Math.max(player.x, 0);
+      player.x = Math.min(player.x, worldWidth);
+      player.y = Math.max(player.y, 0);
+      player.y = Math.min(player.y, worldHeight);
+
       io.emit('playerMoved', { id: socket.id, x: player.x, y: player.y });
   });
 
