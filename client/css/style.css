@@ -1,5 +1,11 @@
-body {
+body, html {
     background-color: lightblue;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 canvas {
@@ -7,4 +13,38 @@ canvas {
     margin: auto;
     background-color: white;
     border: 1px solid black;
+}
+
+#container {
+    display: flex;
+    flex-direction: row;
+    height: 100%; 
+    width: 100%; 
+}
+
+#chatWindow {
+    width: 300px; 
+    height: 100%; 
+    border: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    box-sizing: border-box;
+    background-color: #f8f8f8;
+    overflow-y: auto; 
+}
+
+#messages {
+    flex-grow: 1;
+    border: 1px solid #ddd;
+    margin-top: 10px;
+    overflow-y: auto;
+}
+
+#gameCanvas {
+    flex-grow: 1; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: white; 
 }
