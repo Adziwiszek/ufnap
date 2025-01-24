@@ -30,14 +30,14 @@ const worldHeight = 1000;
 io.on('connection', (socket) => {
   // console.log(`Player connected: ${socket.id}`);
   
-  socket.on('client ready', () => {
+  socket.on('clientReady', () => {
     // Send any players that are currently connected
     socket.emit('currentPlayers', players);
     
     // Initialize player
     players[socket.id] = { x: 100, y: 100 };
 
-    io.to(socket.id).emit('init message', {
+    io.to(socket.id).emit('initMessage', {
       id: socket.id,
       x: players[socket.id].x,
       y: players[socket.id].y,
@@ -81,9 +81,9 @@ io.on('connection', (socket) => {
     //socket.emit('chat message', data); tylko do połączonego
   })
   // handling player updates
-  setInterval(() => {
+  /*setInterval(() => {
     io.emit('update players', players);
-  }, 1000/30);
+  }, 1000/30);*/
 });
   
 server.listen(3000, () => {

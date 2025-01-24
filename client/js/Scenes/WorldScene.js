@@ -115,8 +115,8 @@ class WorldScene extends Phaser.Scene {
     }
 
     initSocketEvents() {
-        socket.emit('client ready');
-        socket.on('init message', (message) => {
+        socket.emit('clientReady');
+        socket.on('initMessage', (message) => {
             if(message.id) {
                 this.myID = message.id;
                 this.addNewPlayer(message.x, message.y, this.myID);
@@ -140,7 +140,7 @@ class WorldScene extends Phaser.Scene {
             }
         }); 
         
-        socket.on('update players', (serverPlayers) => {
+        /*socket.on('update players', (serverPlayers) => {
             for(let id in serverPlayers) {
                 let x = serverPlayers[id].x;
                 let y = serverPlayers[id].y;
@@ -149,7 +149,7 @@ class WorldScene extends Phaser.Scene {
                     p.setPosition(x, y);
                 }
             }
-        });
+        });*/
         
         socket.on('newPlayer', ({id, x, y}) => {
             console.log('new player!');
