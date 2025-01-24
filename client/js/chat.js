@@ -1,5 +1,6 @@
 import socket from '/socket.js';
 
+// eslint-disable-next-line no-unused-vars
 let myID = null;
 
 window.addEventListener('load', () => {       

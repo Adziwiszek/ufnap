@@ -30,10 +30,13 @@ const worldHeight = 1000;
 io.on('connection', (socket) => {
   // console.log(`Player connected: ${socket.id}`);
   
-  // Initialize player
-  players[socket.id] = { x: 100, y: 100 };
-
   socket.on('client ready', () => {
+    // Send any players that are currently connected
+    socket.emit('currentPlayers', players);
+    
+    // Initialize player
+    players[socket.id] = { x: 100, y: 100 };
+
     io.to(socket.id).emit('init message', {
       id: socket.id,
       x: players[socket.id].x,
@@ -42,7 +45,6 @@ io.on('connection', (socket) => {
       worldHeight: worldHeight,
     })
   });
-  //socket.emit('currentPlayers', players); // Send current players
   socket.broadcast.emit('newPlayer', { id: socket.id, x: 100, y: 100 });
 
   // Handle player movement
@@ -65,7 +67,7 @@ io.on('connection', (socket) => {
 
   // Handle disconnect
   socket.on('disconnect', () => {
-      console.log(`Player disconnected: ${socket.id}`);
+      // console.log(`Player disconnected: ${socket.id}`);
       delete players[socket.id];
       io.emit('playerDisconnected', socket.id);
   });

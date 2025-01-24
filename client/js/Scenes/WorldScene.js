@@ -9,6 +9,12 @@ class Player {
         this.y = y;
     }
 
+    setPosition(x, y) {
+        this.x = x;
+        this.y = y;
+        this.sprite.setPosition(x, y);
+    }
+
     setSprite(sprite) {
         this.sprite = sprite;
     }
@@ -39,7 +45,7 @@ class WorldScene extends Phaser.Scene {
         this.worldWidth = 1000;
         this.worldHeight = 1000;
         this.players = {};
-        this.playersSprites = {};
+        // this.playersSprites = {};
         this.myID = null; 
 
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -64,14 +70,6 @@ class WorldScene extends Phaser.Scene {
         } else if (this.cursors.down.isDown) {
             socket.emit('move', 'down');
         }
-       
-        for(let id in this.players) {
-            const sp = this.playersSprites[id];
-            const player = this.players[id];
-            if(sp) {
-                sp.setPosition(player.x, player.y);
-            }
-        }
     }
 
     createPlayerSprite(tint=0xf24f44, x=200, y=200) {
@@ -81,6 +79,17 @@ class WorldScene extends Phaser.Scene {
         newPlayer.setTint(tint);
         newPlayer.setCollideWorldBounds(true);
         return newPlayer;
+    }
+
+    addNewPlayer(x, y, id) {
+        let p = new Player(x, y, this);
+        let tint = id === this.myID ? 0x4287f5 : 0xff9c66;
+        p.setSprite(this.createPlayerSprite(
+            tint,
+            x,
+            y
+        ));
+        this.players[id] = p;
     }
 
     focusCamera(id) {
@@ -107,16 +116,8 @@ class WorldScene extends Phaser.Scene {
         socket.emit('client ready');
         socket.on('init message', (message) => {
             if(message.id) {
-                console.log(`x = ${message.x}, y = ${message.y}`);
                 this.myID = message.id;
-                let p = new Player(message.x, message.y, this);
-                p.setSprite(this.createPlayerSprite(
-                    0x4287f5,
-                    message.x,
-                    message.y
-                ));
-                this.players[message.id] = p;
-
+                this.addNewPlayer(message.x, message.y, this.myID);
                 this.focusCamera(this.myID);
             }
             if(message.worldHeight && message.worldWidth) {
@@ -126,42 +127,33 @@ class WorldScene extends Phaser.Scene {
                 );
             }
         });
-        
-        /*socket.on('currentPlayers', (serverPlayers) => {
-            // Clearing old players
-            for(let id in this.players) {
-                delete this.players[id];
-            }
-            // Reassigning new players from server
-            for(let id in serverPlayers) {
-                this.players[id] = {
-                    x: serverPlayers.x,
-                    y: serverPlayers.y
-                };
-                if (!this.playersSprites[id]) {
-                    this.playersSprites[id] = this.createPlayerSprite();
-                }
-            }
-        });*/
-        
-        /*socket.on('update players', (serverPlayers) => {
-            for(let id in serverPlayers) {
-                if (!this.playersSprites[id]) {
-                    this.playersSprites[id] = this.createPlayerSprite();
-                }
-                this.players[id] = serverPlayers[id];
-                this.playersSprites[id].setPosition(
-                    this.players[id].x,
-                    this.players[id].y
+
+        socket.on('currentPlayers', (players) => {
+            for(let id in players) {
+                this.addNewPlayer(
+                    players[id].x,
+                    players[id].y,
+                    id
                 );
+            }
+        }); 
+        
+        socket.on('update players', (serverPlayers) => {
+            for(let id in serverPlayers) {
+                let x = serverPlayers[id].x;
+                let y = serverPlayers[id].y;
+                let p = this.players[id];
+                if(p) {
+                    p.setPosition(x, y);
+                }
             }
         });
         
-        socket.on('newPlayer', (player) => {
-            this.players[player.id] = { x: player.x, y: player.y};
-            this.playersSprites[player.id] = this.createPlayerSprite();
-        });*/
-        
+        socket.on('newPlayer', ({id, x, y}) => {
+            console.log('new player!');
+            this.addNewPlayer(x, y, id);
+        });
+            
         socket.on('playerMoved', ({ id, x, y }) => {
             if (this.players[id]) {
                 this.players[id].x = x;
@@ -176,12 +168,11 @@ class WorldScene extends Phaser.Scene {
         });
         
         socket.on('playerDisconnected', (id) => {
-            const sprite = this.playersSprites[id];
-            if (sprite) {
-                sprite.destroy();
+            const player = this.players[id];
+            if (player && player.sprite) {
+                player.sprite.destroy();
             }
             delete this.players[id];
-            delete this.playersSprites[id];
         });
 
         socket.on('chat message', (data) => {

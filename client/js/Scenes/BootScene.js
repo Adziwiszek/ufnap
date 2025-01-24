@@ -1,6 +1,7 @@
-import socket from './../socket.js';
+// import socket from './../socket.js';
 
 
+// eslint-disable-next-line no-undef
 class BootScene extends Phaser.Scene
 {
     constructor () {
@@ -18,9 +19,9 @@ class BootScene extends Phaser.Scene
         this.scene.start('WorldScene');
     }
 
-    update(time, dt) {
+    // update(time, dt) {
         
-    }
+    // }
 }
 
 export default BootScene;
