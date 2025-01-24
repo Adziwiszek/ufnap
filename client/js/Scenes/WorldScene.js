@@ -1,9 +1,30 @@
 import socket from './../socket.js';
 
+const textBubbleLifeTime = 2000;
+
+class Player {
+    constructor(x, y, parentScene) {
+        this.parentScene = parentScene;
+        this.x = x;
+        this.y = y;
+    }
+
+    setSprite(sprite) {
+        this.sprite = sprite;
+    }
+
+    showChatBubble(text) {
+        this.text = text;
+        setInterval(() => {
+            text.setPosition(this.x, this.y);
+        }, 100);
+        setTimeout(() => {
+            this.text.destroy();
+        }, 2000);
+    }
+}
 
 class WorldScene extends Phaser.Scene {
-    player;
-
     constructor () {
        super('WorldScene');
        WorldScene.instance = this;
@@ -23,6 +44,10 @@ class WorldScene extends Phaser.Scene {
 
         this.cursors = this.input.keyboard.createCursorKeys();
         this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);
+
+        // let text = this.add.text(0, 0, 'Hello World', { font: '"Press Start 2P"' });
+        // text.setPosition(300, 300);
+        // setTimeout(() => {text.destroy();}, 2000);
 
         this.initSocketEvents();
     }
@@ -49,9 +74,9 @@ class WorldScene extends Phaser.Scene {
         }
     }
 
-    addPlayer(tint=0xf24f44) {
+    createPlayerSprite(tint=0xf24f44, x=200, y=200) {
         let newPlayer = this.physics.add
-            .sprite(200, 200, 'player')
+            .sprite(x, y, 'player')
         newPlayer.setScale(0.1);
         newPlayer.setTint(tint);
         newPlayer.setCollideWorldBounds(true);
@@ -59,8 +84,9 @@ class WorldScene extends Phaser.Scene {
     }
 
     focusCamera(id) {
-        if (this.playersSprites[id]) {
-            this.cameras.main.startFollow(this.playersSprites[id]);
+        if (this.players[id].sprite) {
+            const sprite = this.players[id].sprite;
+            this.cameras.main.startFollow(sprite);
             //this.cameras.main.setZoom(2);
             this.cameras.main.setBounds(0, 0, this.worldWidth, this.worldHeight);
         } else {
@@ -81,8 +107,16 @@ class WorldScene extends Phaser.Scene {
         socket.emit('client ready');
         socket.on('init message', (message) => {
             if(message.id) {
+                console.log(`x = ${message.x}, y = ${message.y}`);
                 this.myID = message.id;
-                this.playersSprites[this.myID] = this.addPlayer(0x7eb7ed);
+                let p = new Player(message.x, message.y, this);
+                p.setSprite(this.createPlayerSprite(
+                    0x4287f5,
+                    message.x,
+                    message.y
+                ));
+                this.players[message.id] = p;
+
                 this.focusCamera(this.myID);
             }
             if(message.worldHeight && message.worldWidth) {
@@ -91,9 +125,9 @@ class WorldScene extends Phaser.Scene {
                     message.worldWidth
                 );
             }
-        })
+        });
         
-        socket.on('currentPlayers', (serverPlayers) => {
+        /*socket.on('currentPlayers', (serverPlayers) => {
             // Clearing old players
             for(let id in this.players) {
                 delete this.players[id];
@@ -105,15 +139,15 @@ class WorldScene extends Phaser.Scene {
                     y: serverPlayers.y
                 };
                 if (!this.playersSprites[id]) {
-                    this.playersSprites[id] = this.addPlayer();
+                    this.playersSprites[id] = this.createPlayerSprite();
                 }
             }
-        });
+        });*/
         
-        socket.on('update players', (serverPlayers) => {
+        /*socket.on('update players', (serverPlayers) => {
             for(let id in serverPlayers) {
                 if (!this.playersSprites[id]) {
-                    this.playersSprites[id] = this.addPlayer();
+                    this.playersSprites[id] = this.createPlayerSprite();
                 }
                 this.players[id] = serverPlayers[id];
                 this.playersSprites[id].setPosition(
@@ -125,14 +159,14 @@ class WorldScene extends Phaser.Scene {
         
         socket.on('newPlayer', (player) => {
             this.players[player.id] = { x: player.x, y: player.y};
-            this.playersSprites[player.id] = this.addPlayer();
-        });
+            this.playersSprites[player.id] = this.createPlayerSprite();
+        });*/
         
         socket.on('playerMoved', ({ id, x, y }) => {
             if (this.players[id]) {
                 this.players[id].x = x;
                 this.players[id].y = y;
-                const sprite = this.playersSprites[id];
+                const sprite = this.players[id].sprite;
                 if (sprite) {
                     sprite.setPosition(x, y);
                 } else {
@@ -148,6 +182,13 @@ class WorldScene extends Phaser.Scene {
             }
             delete this.players[id];
             delete this.playersSprites[id];
+        });
+
+        socket.on('chat message', (data) => {
+            console.log(data);
+            let text = this.add.text(0, 0, data, { font: '"Press Start 2P"' });
+            text.setPosition(300, 300);
+            setTimeout(() => {text.destroy();}, 2000);
         });
     }
 }

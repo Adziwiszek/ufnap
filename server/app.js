@@ -32,14 +32,17 @@ io.on('connection', (socket) => {
   
   // Initialize player
   players[socket.id] = { x: 100, y: 100 };
+
   socket.on('client ready', () => {
     io.to(socket.id).emit('init message', {
       id: socket.id,
+      x: players[socket.id].x,
+      y: players[socket.id].y,
       worldWidth: worldWidth,
       worldHeight: worldHeight,
     })
   });
-  socket.emit('currentPlayers', players); // Send current players
+  //socket.emit('currentPlayers', players); // Send current players
   socket.broadcast.emit('newPlayer', { id: socket.id, x: 100, y: 100 });
 
   // Handle player movement
