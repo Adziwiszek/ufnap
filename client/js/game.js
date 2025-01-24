@@ -1,4 +1,4 @@
-import socket from '/socket.js';
+// import socket from '/socket.js';
 import BootScene from './Scenes/BootScene.js';
 import WorldScene from './Scenes/WorldScene.js';
 
@@ -16,4 +16,5 @@ const config = {
     parent: 'gameCanvas',
 };
 
+// eslint-disable-next-line no-unused-vars
 const game = new Phaser.Game(config);

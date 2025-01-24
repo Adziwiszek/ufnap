@@ -1,7 +1,5 @@
 // import socket from './../socket.js';
 
-
-// eslint-disable-next-line no-undef
 class BootScene extends Phaser.Scene
 {
     constructor () {

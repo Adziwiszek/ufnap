@@ -13,6 +13,9 @@ class Player {
         this.x = x;
         this.y = y;
         this.sprite.setPosition(x, y);
+        if (this.text) {
+            this.text.setPosition(x, y - 50);
+        }
     }
 
     setSprite(sprite) {
@@ -20,13 +23,16 @@ class Player {
     }
 
     showChatBubble(text) {
-        this.text = text;
-        setInterval(() => {
-            text.setPosition(this.x, this.y);
-        }, 100);
-        setTimeout(() => {
+        if (this.text) {
             this.text.destroy();
-        }, 2000);
+        }
+        this.text = text;
+        this.text.setPosition(this.x, this.y);
+        setTimeout(() => {
+            if (this.text.getData('id') == text.getData('id')) {
+                this.text.destroy();
+            }
+        }, textBubbleLifeTime);
     }
 }
 
@@ -45,15 +51,11 @@ class WorldScene extends Phaser.Scene {
         this.worldWidth = 1000;
         this.worldHeight = 1000;
         this.players = {};
-        // this.playersSprites = {};
+        this.msgCounter = 0;
         this.myID = null; 
 
         this.cursors = this.input.keyboard.createCursorKeys();
         this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);
-
-        // let text = this.add.text(0, 0, 'Hello World', { font: '"Press Start 2P"' });
-        // text.setPosition(300, 300);
-        // setTimeout(() => {text.destroy();}, 2000);
 
         this.initSocketEvents();
     }
@@ -175,11 +177,20 @@ class WorldScene extends Phaser.Scene {
             delete this.players[id];
         });
 
-        socket.on('chat message', (data) => {
-            console.log(data);
-            let text = this.add.text(0, 0, data, { font: '"Press Start 2P"' });
-            text.setPosition(300, 300);
-            setTimeout(() => {text.destroy();}, 2000);
+        socket.on('chatMessage', (message) => {
+            let sender = this.players[message.id];
+            if (sender) {
+                let text = this.add.text(
+                    0, 0, 
+                    message.data, 
+                    { 
+                        font: '"Press Start 2P"',
+                    }
+                );
+                // text.setFontSize(32);
+                text.setData('id', this.msgCounter++);
+                sender.showChatBubble(text);
+            }
         });
     }
 }

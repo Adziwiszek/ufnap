@@ -72,9 +72,12 @@ io.on('connection', (socket) => {
       io.emit('playerDisconnected', socket.id);
   });
   // handling chat
-  socket.on('chat message', (data) =>{
-    console.log('emiting: ' + data);
-    io.emit('chat message', data); // do wszystkich
+  socket.on('chatMessage', (data) =>{
+    // console.log(`server received: ${data}`);
+    io.emit('chatMessage', {
+      id: socket.id, 
+      data: data
+    }); // do wszystkich
     //socket.emit('chat message', data); tylko do połączonego
   })
   // handling player updates
