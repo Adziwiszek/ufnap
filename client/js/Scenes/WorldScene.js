@@ -1,6 +1,7 @@
 import socket from './../socket.js';
 
-const textBubbleLifeTime = 2000;
+const textBubbleLifeTime = 100000;
+const bubbleTextPadding = {west: 10, east: 10, north:10, south: 10};
 
 class Player {
     constructor(x, y, parentScene) {
@@ -15,8 +16,9 @@ class Player {
         if (this.sprite) {
             this.sprite.setPosition(x, y);
         }
-        if (this.text) {
-            this.text.setPosition(x, y - 50);
+        if (this.chatBubble) {
+            // let bubbleBounds = this.chatBubble.bubble.getBounds();
+            this.setChatBubblePosition(this.x, this.y);
         }
     }
 
@@ -24,16 +26,29 @@ class Player {
         this.sprite = sprite;
     }
 
-    showChatBubble(text) {
-        if (this.text) {
-            this.text.destroy();
+    setChatBubblePosition(x, y) {
+        let contentBounds = this.chatBubble.content.getBounds();
+        let playerBounds = this.sprite.getBounds();
+        this.chatBubble.bubble.setPosition(x, y - (playerBounds.height/2) - this.chatBubble.bubbleHeight);
+        this.chatBubble.content.setPosition(
+            x + bubbleTextPadding.west,
+            y - (playerBounds.height/2) - this.chatBubble.bubbleHeight + bubbleTextPadding.north
+        );
+    }
+
+    showChatBubble(chatBubble) {
+        if (this.chatBubble) {
+            this.chatBubble.bubble.destroy();
+            this.chatBubble.content.destroy();
         }
-        this.text = text;
-        this.text.setPosition(this.x, this.y - 50);
-        console.log(`x = ${text.x}, y = ${text.y}`);
+        this.chatBubble = chatBubble;
+        this.setChatBubblePosition(this.x, this.y);
         setTimeout(() => {
-            if (this.text.getData('id') == text.getData('id')) {
-                this.text.destroy();
+            if (this.chatBubble.id == chatBubble.id) {
+                this.chatBubble.bubble.destroy();
+                this.chatBubble.content.destroy();
+                
+                delete this.chatBubble;
             }
         }, textBubbleLifeTime);
     }
@@ -97,6 +112,75 @@ class WorldScene extends Phaser.Scene {
         this.players[id] = p;
     }
 
+    /**
+     * Creates a chat bubble with a given text at a specified position.
+     * 
+     * @param {*} x - x coordinate
+     * @param {*} y - y coordinate
+     * @param {*} text - chat message
+     * @returns {{bubble: Phaser.GameObjects.Graphics, content: Phaser.GameObjects.Text}} 
+     * Returns background for chat bubble and text
+     */
+    createChatBubble(x, y, text) {
+        let content = this.add.text(
+            0, 0, text, 
+            { 
+                fontFamily: 'Arial',
+                fontSize: 18,
+                color: '#000000',
+                align: 'center',
+                //wordWrap: { width: bubbleWidth - (bubblePadding * 2) } 
+            }
+        );
+        let contentBounds = content.getBounds();
+        
+        let bubblePadding = 10;
+        let bubbleWidth = contentBounds.width + 2 * bubblePadding;
+        let bubbleHeight = contentBounds.height + 2 * bubblePadding;
+        let arrowHeight = bubbleHeight / 4;
+    
+        let bubble = this.add.graphics({ x: x, y: y });
+        //  Bubble shadow
+        bubble.fillStyle(0x222222, 0.5);
+        bubble.fillRoundedRect(6, 6, bubbleWidth, bubbleHeight, 16);
+    
+        //  Bubble color
+        bubble.fillStyle(0xffffff, 1);
+    
+        //  Bubble outline line style
+        bubble.lineStyle(4, 0x565656, 1);
+    
+        //  Bubble shape and outline
+        bubble.strokeRoundedRect(0, 0, bubbleWidth, bubbleHeight, 16);
+        bubble.fillRoundedRect(0, 0, bubbleWidth, bubbleHeight, 16)
+        
+        //  Calculate arrow coordinates
+        var point1X = Math.floor(bubbleWidth / 7);
+        var point1Y = bubbleHeight;
+        var point2X = Math.floor((bubbleWidth / 7) * 2);
+        var point2Y = bubbleHeight;
+        var point3X = Math.floor(bubbleWidth / 7);
+        var point3Y = Math.floor(bubbleHeight + arrowHeight);
+    
+        //  Bubble arrow shadow
+        bubble.lineStyle(4, 0x222222, 0.5);
+        bubble.lineBetween(point2X - 1, point2Y + 6, point3X + 2, point3Y);
+    
+        //  Bubble arrow fill
+        bubble.fillTriangle(point1X, point1Y, point2X, point2Y, point3X, point3Y);
+        bubble.lineStyle(2, 0x565656, 1);
+        bubble.lineBetween(point2X, point2Y, point3X, point3Y);
+        bubble.lineBetween(point1X, point1Y, point3X, point3Y);
+    
+        content.setPosition(
+            bubble.x + (bubbleWidth - contentBounds.width) / 2,
+            bubble.y + (bubbleHeight - contentBounds.height) / 2
+        );
+        bubble.setDepth(1000);
+        content.setDepth(1001);
+        return {bubble: bubble, content: content, bubbleHeight: bubbleHeight+arrowHeight, bubbleWidth: bubbleWidth};
+    }
+    
     focusCamera(id) {
         if (this.players[id].sprite) {
             const sprite = this.players[id].sprite;
@@ -176,16 +260,14 @@ class WorldScene extends Phaser.Scene {
         socket.on('chatMessage', (message) => {
             let sender = this.players[message.id];
             if (sender) {
-                let text = this.add.text(
-                    0, 0, 
-                    message.data, 
-                    { 
-                        font: '"Press Start 2P"',
-                    }
-                );
-                // text.setFontSize(32);
-                text.setData('id', this.msgCounter++);
-                sender.showChatBubble(text);
+                const chatBubble =
+                    this.createChatBubble(
+                        sender.x,
+                        sender.y,
+                        message.data
+                    );
+                chatBubble.id = this.msgCounter++;
+                sender.showChatBubble(chatBubble);
             }
         });
     }
