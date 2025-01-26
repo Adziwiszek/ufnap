@@ -1,7 +1,8 @@
 import socket from './../socket.js';
 
-const textBubbleLifeTime = 100000;
+const textBubbleLifeTime = 2000;
 const bubbleTextPadding = {west: 10, east: 10, north:10, south: 10};
+const maxTextRow = 20;
 
 class Player {
     constructor(x, y, parentScene) {
@@ -122,8 +123,21 @@ class WorldScene extends Phaser.Scene {
      * Returns background for chat bubble and text
      */
     createChatBubble(x, y, text) {
+        const textRows = [];
+        const words = text.split(/\s+/);
+        let currentRow = [];
+        words.forEach(word => {
+            currentRow.push(word);
+            let rowLen = currentRow.reduce((acc, w) => acc + w.length, 0);
+            if (rowLen >= maxTextRow) {
+                textRows.push(currentRow);
+                currentRow = [];
+            }
+        });
+        if(currentRow.length > 0) textRows.push(currentRow);
+
         let content = this.add.text(
-            0, 0, text, 
+            0, 0, textRows, 
             { 
                 fontFamily: 'Arial',
                 fontSize: 18,
