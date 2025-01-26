@@ -3,6 +3,7 @@ import BootScene from './Scenes/BootScene.js';
 import WorldScene from './Scenes/WorldScene.js';
 
 const config = {
+    // eslint-disable-next-line no-undef
     type: Phaser.AUTO,
     width: 1200,
     height: 800,
@@ -16,5 +17,5 @@ const config = {
     parent: 'gameCanvas',
 };
 
-// eslint-disable-next-line no-unused-vars
+// eslint-disable-next-line no-unused-vars, no-undef
 const game = new Phaser.Game(config);
