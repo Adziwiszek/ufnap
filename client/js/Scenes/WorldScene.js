@@ -100,7 +100,7 @@ class WorldScene extends Phaser.Scene {
                 currentRow = [];
             }
         });
-        if(currentRow.length > 0) textRows.push(currentRow);
+        if(currentRow.length > 0) textRows.push(currentRow.join(" "));
 
         let content = this.add.text(
             0, 0, textRows, 
