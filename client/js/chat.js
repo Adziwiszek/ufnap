@@ -35,11 +35,27 @@ window.addEventListener('load', () => {
         }
     });
 
+    
     btsend.addEventListener('click', sendMessage);
-    txtmessage.addEventListener('keypress', (event) => {
+    txtmessage.addEventListener('keydown', (event) => {
         if(event.key === 'Enter') {
             event.preventDefault();
             sendMessage();
+        } else if (event.key === ' ') {
+            // this is for fixing space not working on input
+            txtmessage.value += ' ';
+        }
+    });
+
+    window.addEventListener('keydown', (event) => {
+        if (document.activeElement === txtmessage) {
+            // Allow normal typing inside the input box.
+            return;
+        }
+
+        if (event.key === ' ') {
+            event.preventDefault(); // Prevent space scrolling.
+            console.log('Space pressed globally');
         }
     });
 });
