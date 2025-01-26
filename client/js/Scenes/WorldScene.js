@@ -12,7 +12,9 @@ class Player {
     setPosition(x, y) {
         this.x = x;
         this.y = y;
-        this.sprite.setPosition(x, y);
+        if (this.sprite) {
+            this.sprite.setPosition(x, y);
+        }
         if (this.text) {
             this.text.setPosition(x, y - 50);
         }
@@ -27,7 +29,8 @@ class Player {
             this.text.destroy();
         }
         this.text = text;
-        this.text.setPosition(this.x, this.y);
+        this.text.setPosition(this.x, this.y - 50);
+        console.log(`x = ${text.x}, y = ${text.y}`);
         setTimeout(() => {
             if (this.text.getData('id') == text.getData('id')) {
                 this.text.destroy();
@@ -60,7 +63,7 @@ class WorldScene extends Phaser.Scene {
         this.initSocketEvents();
     }
 
-    update(time, dt) {
+    update() {
         if (this.cursors.left.isDown) {
             socket.emit('move', 'left');
         } else if (this.cursors.right.isDown) {
@@ -158,14 +161,7 @@ class WorldScene extends Phaser.Scene {
             
         socket.on('playerMoved', ({ id, x, y }) => {
             if (this.players[id]) {
-                this.players[id].x = x;
-                this.players[id].y = y;
-                const sprite = this.players[id].sprite;
-                if (sprite) {
-                    sprite.setPosition(x, y);
-                } else {
-                    console.warn(`Sprite not found for player ${id}`);
-                }
+                this.players[id].setPosition(x, y);
             }
         });
         
