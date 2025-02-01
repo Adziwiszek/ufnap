@@ -6,8 +6,8 @@ import TestLobbyScene from './Scenes/TestLobbyScene.js';
 const config = {
     // eslint-disable-next-line no-undef
     type: Phaser.AUTO,
-    width: 1200,
-    height: 800,
+    width: 1152,
+    height: 704,
     scene: [BootScene, TestLobbyScene],
     physics: {
         default: 'arcade',

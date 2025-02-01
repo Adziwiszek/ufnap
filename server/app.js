@@ -7,9 +7,6 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 
-app.use(express.static(path.join(__dirname, '../client/html')));
-app.use(express.static(path.join(__dirname, '../client/js')));
-app.use(express.static(path.join(__dirname, '../client/css')));
 app.use(express.static(path.join(__dirname, '../client')));
 
 app.get('/', (req, res) => {

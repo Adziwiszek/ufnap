@@ -5,6 +5,11 @@ const maxTextRow = 20;
 
 // eslint-disable-next-line no-undef
 class WorldScene extends Phaser.Scene {
+/**
+ * WorldScene is a template class for other scenes.
+ * It has basic functionalities, like moving player in update(),
+ * socket events, adding players etc.
+ */
     constructor ({key: sceneName}) {
        super({key: sceneName});
        console.log(`this scene has name = ${sceneName}`);
@@ -17,8 +22,8 @@ class WorldScene extends Phaser.Scene {
     }
 
     create () {
-        this.worldWidth = 1000;
-        this.worldHeight = 1000;
+        this.worldWidth = 1024;
+        this.worldHeight = 1024;
         this.players = {};
         this.msgCounter = 0;
         this.myID = null; 
