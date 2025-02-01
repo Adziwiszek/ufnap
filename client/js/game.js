@@ -1,13 +1,14 @@
 // import socket from '/socket.js';
 import BootScene from './Scenes/BootScene.js';
-import WorldScene from './Scenes/WorldScene.js';
+//import WorldScene from './Scenes/WorldScene.js';
+import TestLobbyScene from './Scenes/TestLobbyScene.js';
 
 const config = {
     // eslint-disable-next-line no-undef
     type: Phaser.AUTO,
     width: 1200,
     height: 800,
-    scene: [BootScene, WorldScene],
+    scene: [BootScene, TestLobbyScene],
     physics: {
         default: 'arcade',
         arcade: {

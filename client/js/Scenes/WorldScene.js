@@ -5,8 +5,9 @@ const maxTextRow = 20;
 
 // eslint-disable-next-line no-undef
 class WorldScene extends Phaser.Scene {
-    constructor () {
-       super('WorldScene');
+    constructor ({key: sceneName}) {
+       super({key: sceneName});
+       console.log(`this scene has name = ${sceneName}`);
        WorldScene.instance = this;
     }
 
