@@ -11,9 +11,11 @@ class WorldScene extends Phaser.Scene {
  * socket events, adding players etc.
  */
     constructor ({key: sceneName}) {
-       super({key: sceneName});
-       console.log(`this scene has name = ${sceneName}`);
-       WorldScene.instance = this;
+        super({key: sceneName});
+        
+        this.idReadyPromise = new Promise((resolve) => {
+            this.resolveIdPromise = resolve;
+        })
     }
 
     preload ()
@@ -197,6 +199,10 @@ class WorldScene extends Phaser.Scene {
             this.worldWidth, this.worldHeight);
     }
 
+    waitForId() {
+        return this.idReadyPromise;
+    }
+
     /**
      * Initializes socket events
      */
@@ -205,6 +211,7 @@ class WorldScene extends Phaser.Scene {
         socket.on('initMessage', (message) => {
             if(message.id) {
                 this.myID = message.id;
+                this.resolveIdPromise(this.myID);
                 this.addNewPlayer(message.x, message.y, this.myID);
                 this.focusCamera(this.myID);
             }

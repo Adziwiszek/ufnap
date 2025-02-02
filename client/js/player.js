@@ -33,6 +33,7 @@ class Player {
      */
     setSprite(sprite) {
         this.sprite = sprite;
+        this.sprite.setDepth(500);
     }
 
     /**
