@@ -19,9 +19,11 @@ let players = {}
   var date = new Date().toString();
   io.emit( 'message', date.toString() );
 }, 1000 );*/
-
 const worldWidth = 2000;
 const worldHeight = 1000;
+// adjusts world size to be multiple of tile size (32)
+const adjustedWorldWidth = Math.ceil(worldWidth / 32) * 32;
+const adjustedWorldHeight = Math.ceil(worldHeight / 32) * 32;
 
 // Handle socket connections
 io.on('connection', (socket) => {
@@ -38,8 +40,8 @@ io.on('connection', (socket) => {
       id: socket.id,
       x: players[socket.id].x,
       y: players[socket.id].y,
-      worldWidth: worldWidth,
-      worldHeight: worldHeight,
+      worldWidth: adjustedWorldWidth,
+      worldHeight: adjustedWorldHeight,
     })
   });
   socket.broadcast.emit('newPlayer', { id: socket.id, x: 100, y: 100 });

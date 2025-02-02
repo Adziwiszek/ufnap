@@ -227,7 +227,6 @@ class WorldScene extends Phaser.Scene {
         }); 
         
         socket.on('newPlayer', ({id, x, y}) => {
-            console.log('new player!');
             this.addNewPlayer(x, y, id);
         });
             

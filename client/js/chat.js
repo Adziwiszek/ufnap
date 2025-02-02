@@ -1,4 +1,4 @@
-import socket from '/socket.js';
+import socket from '/js/socket.js';
 
 // eslint-disable-next-line no-unused-vars
 let myID = null;
