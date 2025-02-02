@@ -13,7 +13,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/html/index.html'));  
 });
 
-let players = {}
+let players = {};
 
 /*setInterval( function() {
   var date = new Date().toString();
@@ -27,14 +27,25 @@ const adjustedWorldHeight = Math.ceil(worldHeight / 32) * 32;
 
 // Handle socket connections
 io.on('connection', (socket) => {
-    // console.log(`Player connected: ${socket.id}`);
+    console.log(`Player connected: ${socket.id}`);
     
-    socket.on('clientReady', () => {
-        // Send any players that are currently connected
-        socket.emit('currentPlayers', players);
-        
+    socket.on('clientReady', ({key: sceneName}) => {
+        console.log(`player joining scene ${sceneName}`);
+
+        // Add player to the room
+        socket.join(sceneName);
+
+        // Send players that are already in this room
+        const roomPlayers = {};
+        for(const id in players) {
+            if(players[id].currentRoom === sceneName) {
+                roomPlayers[id] = players[id];
+            }
+        }
+        io.to(socket.id).emit('currentPlayers', roomPlayers);
+
         // Initialize player
-        players[socket.id] = { x: 100, y: 100 };
+        players[socket.id] = { x: 99, y: 100, currentRoom: sceneName};
     
         io.to(socket.id).emit('initMessage', {
           id: socket.id,
@@ -43,46 +54,59 @@ io.on('connection', (socket) => {
           worldWidth: adjustedWorldWidth,
           worldHeight: adjustedWorldHeight,
         })
-      });
-      socket.broadcast.emit('newPlayer', { id: socket.id, x: 100, y: 100 });
+        socket.broadcast.to(sceneName).emit('newPlayer', { id: socket.id, x: 100, y: 100 });
+    });
   
-      // Handle player movement
-      socket.on('move', (direction) => {
-          const player = players[socket.id];
-          if (!player) return;
+    // Handle player movement
+    socket.on('move', (direction) => {
+        const player = players[socket.id];
+        if (!player) return;
     
-          if (direction === 'left') player.x -= 5;
-          if (direction === 'right') player.x += 5;
-          if (direction === 'up') player.y -= 5;
-          if (direction === 'down') player.y += 5;
-          // checking if player went out of bounds
-          player.x = Math.max(player.x, 0);
-          player.x = Math.min(player.x, worldWidth);
-          player.y = Math.max(player.y, 0);
-          player.y = Math.min(player.y, worldHeight);
-    
-          io.emit('playerMoved', { id: socket.id, x: player.x, y: player.y });
-      });
+        if (direction === 'left') player.x -= 5;
+        if (direction === 'right') player.x += 5;
+        if (direction === 'up') player.y -= 5;
+        if (direction === 'down') player.y += 5;
+        // checking if player went out of bounds
+        player.x = Math.max(player.x, 0);
+        player.x = Math.min(player.x, worldWidth);
+        player.y = Math.max(player.y, 0);
+        player.y = Math.min(player.y, worldHeight);
 
-      // Handle disconnect
-      socket.on('disconnect', () => {
-          // console.log(`Player disconnected: ${socket.id}`);
-          delete players[socket.id];
-          io.emit('playerDisconnected', socket.id);
-      });
-      // handling chat
-      socket.on('chatMessage', (data) =>{
-        // console.log(`server received: ${data}`);
-        io.emit('chatMessage', {
-          id: socket.id, 
-          data: data
-        }); // do wszystkich
-        //socket.emit('chat message', data); tylko do połączonego
-      })
-      // handling player updates
-      /*setInterval(() => {
-        io.emit('update players', players);
-      }, 1000/30);*/
+        io.in(player.currentRoom).emit('playerMoved', { id: socket.id, x: player.x, y: player.y });
+    });
+
+    // Handle disconnect
+    socket.on('disconnect', () => {
+        console.log(`Player disconnected: ${socket.id}`);
+        const playerRoom = players[socket.id].currentRoom;
+        delete players[socket.id];
+        io.in(playerRoom).emit('playerDisconnected', socket.id);
+    });
+    // handling chat
+    socket.on('chatMessage', (data) =>{
+    const player = players[socket.id];
+    io.in(player.currentRoom).emit('chatMessage', {
+        id: socket.id, 
+        data: data
+    }); 
+    })
+    // Handle player changing rooms
+    socket.on('changeRoom', ({ newRoom }) => {
+        const player = players[socket.id];
+        // tell players in old room about disconnect
+        socket.broadcast.to(player.currentRoom).emit('playerDisconnected');
+
+        socket.leave(player.currentRoom);
+        socket.join(newRoom);
+        player.currentRoom = newRoom;
+
+        // notify other players in this room
+        socket.broadcast.to(newRoom).emit('newPlayer', { id: socket.id, x: player.x, y: player.y });
+    });
+    // handling player updates
+    /*setInterval(() => {
+    io.emit('update players', players);
+    }, 1000/30);*/
 });
   
 server.listen(3000, () => {

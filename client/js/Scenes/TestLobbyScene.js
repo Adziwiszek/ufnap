@@ -1,4 +1,4 @@
-// import socket from './../socket.js';
+import socket from './../socket.js';
 import WorldScene from './WorldScene.js';
 import {addTeleporter} from './../SceneTeleporter.js';
 
@@ -16,6 +16,9 @@ class TestLobbyScene extends WorldScene {
 
     create() {
         super.create();
+        
+
+        // this.initSocketEvents();
         this.waitForId().then(() => {
             this.initializeScene();
         });
@@ -35,11 +38,19 @@ class TestLobbyScene extends WorldScene {
         const layer = map.createBlankLayer('layer1', tiles);
         layer.randomize(0, 0, map.width, map.height, [ 0, 1]);
 
-        console.log(`my id = ${this.myID}`);
+        // creating test teleporter
         this.houseTeleporter = addTeleporter(
             this, 
-            () => { this.scene.start('HouseScene'); }, 
+            () => { 
+                socket.emit('changeRoom', { newRoom: 'HouseScene'});
+                this.scene.start('HouseScene'); 
+            }, 
             {x: 400, y: 400}
+        );
+        this.physics.add.collider(
+            this.houseTeleporter.sprite,
+            this.players[this.myID].sprite,
+            this.houseTeleporter.callback
         );
     }
 

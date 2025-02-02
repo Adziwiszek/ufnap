@@ -17,6 +17,7 @@ class BootScene extends Phaser.Scene
     create ()
     {
         this.scene.start('TestLobbyScene');
+        // this.scene.start('HouseScene');
     }
 
     // update(time, dt) {

@@ -12,18 +12,22 @@ class WorldScene extends Phaser.Scene {
  */
     constructor ({key: sceneName}) {
         super({key: sceneName});
-        
         this.idReadyPromise = new Promise((resolve) => {
             this.resolveIdPromise = resolve;
         })
     }
 
-    preload ()
+preload ()
     {
 
     }
 
     create () {
+        if (!this.physics) {
+            console.error("Physics engine is not initialized!================================");
+            return;
+        }
+
         this.worldWidth = 1024;
         this.worldHeight = 1024;
         this.players = {};
@@ -34,6 +38,9 @@ class WorldScene extends Phaser.Scene {
         this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);
 
         this.initSocketEvents();
+        console.log(this.physics);
+
+        this.coom = 42;
     }
 
     update() {
@@ -60,6 +67,11 @@ class WorldScene extends Phaser.Scene {
      * Player sprite
      */
     createPlayerSprite(tint=0xf24f44, x=200, y=200) {
+        if (!this.physics || !this.physics.add) {
+            console.error('Physics system is not initialized!');
+            return;
+        }     
+
         let newPlayer = this.physics.add
             .sprite(x, y, 'player')
         newPlayer.setScale(0.1);
@@ -207,8 +219,9 @@ class WorldScene extends Phaser.Scene {
      * Initializes socket events
      */
     initSocketEvents() {
-        socket.emit('clientReady');
+        socket.emit('clientReady', {key: this.scene.key});
         socket.on('initMessage', (message) => {
+            console.log(`cuming = ${this.coom}`);
             if(message.id) {
                 this.myID = message.id;
                 this.resolveIdPromise(this.myID);
@@ -234,6 +247,7 @@ class WorldScene extends Phaser.Scene {
         }); 
         
         socket.on('newPlayer', ({id, x, y}) => {
+            console.log('new player joined!');
             this.addNewPlayer(x, y, id);
         });
             

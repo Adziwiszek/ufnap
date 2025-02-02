@@ -32,6 +32,10 @@ class Player {
      * @param {sprite: Phaser.GameObjects.Sprite} sprite - player sprite
      */
     setSprite(sprite) {
+        if(!sprite) {
+            console.error('Player has been given null sprite.')
+            return;
+        }
         this.sprite = sprite;
         this.sprite.setDepth(500);
     }
