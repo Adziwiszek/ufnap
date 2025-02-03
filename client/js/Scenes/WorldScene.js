@@ -1,5 +1,6 @@
 import socket from './../socket.js';
 import {Player, bubbleTextPadding} from './../player.js';
+import sessionManager from './../SessionManager.js';
 
 const maxTextRow = 20;
 
@@ -8,7 +9,7 @@ class WorldScene extends Phaser.Scene {
 /**
  * WorldScene is a template class for other scenes.
  * It has basic functionalities, like moving player in update(),
- * socket events, adding players etc.
+ * adding players etc.
  */
     constructor ({key: sceneName}) {
         super({key: sceneName});
@@ -17,43 +18,41 @@ class WorldScene extends Phaser.Scene {
         })
     }
 
-preload ()
+    preload ()
     {
 
     }
 
     create () {
-        if (!this.physics) {
-            console.error("Physics engine is not initialized!================================");
-            return;
-        }
+        this.players = {};
+        this.myID = null; 
+        this.messages = {};
 
         this.worldWidth = 1024;
         this.worldHeight = 1024;
-        this.players = {};
         this.msgCounter = 0;
-        this.myID = null; 
 
         this.cursors = this.input.keyboard.createCursorKeys();
         this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);
 
-        this.initSocketEvents();
-        console.log(this.physics);
+        sessionManager.connect(this.scene.key);
+
+        // this.initSocketEvents();
 
         this.coom = 42;
     }
 
     update() {
         if (this.cursors.left.isDown) {
-            socket.emit('move', 'left');
+            sessionManager.emit('move', 'left');
         } else if (this.cursors.right.isDown) {
-            socket.emit('move', 'right');
+            sessionManager.emit('move', 'right');
         }
 
         if (this.cursors.up.isDown) {
-            socket.emit('move', 'up');
+            sessionManager.emit('move', 'up');
         } else if (this.cursors.down.isDown) {
-            socket.emit('move', 'down');
+            sessionManager.emit('move', 'down');
         }
     }
 
@@ -96,6 +95,9 @@ preload ()
             y
         ));
         this.players[id] = p;
+        this.players[id].sprite.setDepth(1000);
+        console.log('added new player to the scene!');
+        console.log(this.players[id]);
     }
 
     /**

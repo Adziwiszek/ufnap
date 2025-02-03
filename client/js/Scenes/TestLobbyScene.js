@@ -1,6 +1,7 @@
 import socket from './../socket.js';
 import WorldScene from './WorldScene.js';
 import {addTeleporter} from './../SceneTeleporter.js';
+import sessionManager from '../SessionManager.js';
 
 class TestLobbyScene extends WorldScene {
     constructor () {
@@ -16,15 +17,26 @@ class TestLobbyScene extends WorldScene {
 
     create() {
         super.create();
-        
+
+        sessionManager.on('initMessage', (message) => {
+            this.addNewPlayer(message.x, message.y, message.id);
+            this.focusCamera(message.id);
+        });
+
+        sessionManager.on('playerMoved', (message) => {
+            if(this.players[message.id]) {
+                this.players[message.id].setPosition(message.x, message.y);
+            }
+        });
 
         // this.initSocketEvents();
-        this.waitForId().then(() => {
+        sessionManager.waitForId().then(() => {
             this.initializeScene();
         });
     }
 
     initializeScene() {
+        this.myID = sessionManager.myID;
         this.cameras.main.setZoom(1.4);
 
         const map = this.make.tilemap({ 
@@ -43,7 +55,7 @@ class TestLobbyScene extends WorldScene {
             this, 
             () => { 
                 socket.emit('changeRoom', { newRoom: 'HouseScene'});
-                this.scene.start('HouseScene'); 
+                this.scene.start('HouseScene', { sm: this.sessionManager }); 
             }, 
             {x: 400, y: 400}
         );

@@ -8,6 +8,8 @@ const server = http.createServer(app);
 const io = socketIO(server);
 
 app.use(express.static(path.join(__dirname, '../client')));
+app.use(express.static(path.join(__dirname, '../client/html')));
+app.use(express.static(path.join(__dirname, '../client/js')));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/html/index.html'));  
@@ -71,16 +73,17 @@ io.on('connection', (socket) => {
         player.x = Math.min(player.x, worldWidth);
         player.y = Math.max(player.y, 0);
         player.y = Math.min(player.y, worldHeight);
-
         io.in(player.currentRoom).emit('playerMoved', { id: socket.id, x: player.x, y: player.y });
     });
 
     // Handle disconnect
     socket.on('disconnect', () => {
         console.log(`Player disconnected: ${socket.id}`);
-        const playerRoom = players[socket.id].currentRoom;
+        // if(players[socket.id].currentRoom) {
+        //     const playerRoom = players[socket.id].currentRoom;
+        //     io.in(playerRoom).emit('playerDisconnected', socket.id);
+        // }
         delete players[socket.id];
-        io.in(playerRoom).emit('playerDisconnected', socket.id);
     });
     // handling chat
     socket.on('chatMessage', (data) =>{
