@@ -19,6 +19,7 @@ class TestLobbyScene extends WorldScene {
         super.create();
 
         sessionManager.on('initMessage', (message) => {
+            this.myID = message.id;
             this.addNewPlayer(message.x, message.y, message.id);
             this.focusCamera(message.id);
         });
@@ -36,7 +37,6 @@ class TestLobbyScene extends WorldScene {
     }
 
     initializeScene() {
-        this.myID = sessionManager.myID;
         this.cameras.main.setZoom(1.4);
 
         const map = this.make.tilemap({ 
