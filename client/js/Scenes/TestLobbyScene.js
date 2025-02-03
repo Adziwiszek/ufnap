@@ -1,4 +1,3 @@
-import socket from './../socket.js';
 import WorldScene from './WorldScene.js';
 import {addTeleporter} from './../SceneTeleporter.js';
 import sessionManager from '../SessionManager.js';
@@ -15,20 +14,23 @@ class TestLobbyScene extends WorldScene {
         this.load.image('grass_tileset', '/assets/grassTileset.png');
     }
 
+    initPlayer(message) {
+        this.myID = message.id;
+        this.addNewPlayer(message.x, message.y, message.id);
+        this.focusCamera(message.id);
+    }
+
+    updatePlayerPosition(message) {
+        const player = this.players[message.id];
+        player.setPosition(message.x, message.y);
+    }
+
     create() {
         super.create();
 
-        sessionManager.on('initMessage', (message) => {
-            this.myID = message.id;
-            this.addNewPlayer(message.x, message.y, message.id);
-            this.focusCamera(message.id);
-        });
+        sessionManager.on('initMessage', this.initPlayer.bind(this));
 
-        sessionManager.on('playerMoved', (message) => {
-            if(this.players[message.id]) {
-                this.players[message.id].setPosition(message.x, message.y);
-            }
-        });
+        sessionManager.on('playerMoved', this.updatePlayerPosition.bind(this));
 
         // this.initSocketEvents();
         sessionManager.waitForId().then(() => {
@@ -54,7 +56,9 @@ class TestLobbyScene extends WorldScene {
         this.houseTeleporter = addTeleporter(
             this, 
             () => { 
-                socket.emit('changeRoom', { newRoom: 'HouseScene'});
+                sessionManager.removeAllListeners('initMessage');
+                sessionManager.removeAllListeners('playerMoved');
+                sessionManager.emit('changeRoom', { newRoom: 'HouseScene'});
                 this.scene.start('HouseScene', { sm: this.sessionManager }); 
             }, 
             {x: 400, y: 400}

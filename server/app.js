@@ -79,10 +79,11 @@ io.on('connection', (socket) => {
     // Handle disconnect
     socket.on('disconnect', () => {
         console.log(`Player disconnected: ${socket.id}`);
-        // if(players[socket.id].currentRoom) {
-        //     const playerRoom = players[socket.id].currentRoom;
-        //     io.in(playerRoom).emit('playerDisconnected', socket.id);
-        // }
+        console.log(players[socket.id]);
+        if(players[socket.id]) {
+            const playerRoom = players[socket.id].currentRoom;
+            io.in(playerRoom).emit('playerDisconnected', socket.id);
+        }
         delete players[socket.id];
     });
     // handling chat
@@ -95,9 +96,12 @@ io.on('connection', (socket) => {
     })
     // Handle player changing rooms
     socket.on('changeRoom', ({ newRoom }) => {
+        console.log('player is exiting current room!');
+        console.log(players[socket.id]);
         const player = players[socket.id];
+        const currentRoom = players[socket.id].currentRoom;
         // tell players in old room about disconnect
-        socket.broadcast.to(player.currentRoom).emit('playerDisconnected');
+        socket.broadcast.to(currentRoom).emit('playerDisconnected');
 
         socket.leave(player.currentRoom);
         socket.join(newRoom);

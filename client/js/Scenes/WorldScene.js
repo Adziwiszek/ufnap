@@ -37,6 +37,8 @@ class WorldScene extends Phaser.Scene {
 
         sessionManager.connect(this.scene.key);
 
+
+        console.log(this.physics.add)
         // this.initSocketEvents();
 
         this.coom = 42;
@@ -68,6 +70,7 @@ class WorldScene extends Phaser.Scene {
     createPlayerSprite(tint=0xf24f44, x=200, y=200) {
         if (!this.physics || !this.physics.add) {
             console.error('Physics system is not initialized!');
+            console.error(this.physics.add)
             return;
         }     
 

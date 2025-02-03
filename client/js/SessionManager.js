@@ -1,5 +1,4 @@
 import socket from './../socket.js';
-import {Player, bubbleTextPadding} from './../player.js';
 
 class SessionManager {
     constructor(){
@@ -7,8 +6,6 @@ class SessionManager {
         this.connected = false;
         this.connectionListeners = [];
         this.eventListeners = {};
-
-        
 
         this.idReadyPromise = new Promise((resolve) => {
             this.resolveIdPromise = resolve;
@@ -68,6 +65,12 @@ class SessionManager {
         }
     }
 
+    removeAllListeners(eventName) {
+        if(this.eventListeners[eventName]) {
+            delete this.eventListeners[eventName];
+        }
+    }
+
     initSession() {
         socket.emit('clientReady');
         socket.on('initMessage', (message) => {
@@ -82,41 +85,6 @@ class SessionManager {
 
     joinScene(sceneName) {
         socket.emit('joiningRoom', { key: sceneName });
-    }
-
-    sessionUpdate(scene) {
-        socket.on('currentPlayers', (players) => {
-            for(let id in players) {
-                this.newPlayersQueue({id: id, x: players[id].x, y: players[id].y});
-            }
-        }); 
-        
-        socket.on('newPlayer', ({id, x, y}) => {
-            console.log('new player joined!');
-            this.pushNewPlayer({id: id, x: x, y: y});
-        });
-            
-        socket.on('playerMoved', ({ id, x, y }) => {
-            this.pushPlayerMove(id, x, y);
-        });
-        
-        socket.on('playerDisconnected', (id) => {
-            this.destroyPlayersQueue.push(id);
-        });
-
-        socket.on('chatMessage', (message) => {
-            /*let sender = this.players[message.id];
-            if (sender) {
-                const chatBubble =
-                    this.createChatBubble(
-                        sender.x,
-                        sender.y,
-                        message.data
-                    );
-                chatBubble.id = this.msgCounter++;
-                sender.showChatBubble(chatBubble);
-            }*/
-        });
     }
 }
 
