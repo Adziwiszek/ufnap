@@ -49,6 +49,20 @@ class TestLobbyScene extends WorldScene {
             }
         });
 
+        sessionManager.on('chatMessage', (message) => {
+            let sender = this.players[message.id];
+            if (sender) {
+                const chatBubble =
+                    this.createChatBubble(
+                        sender.x,
+                        sender.y,
+                        message.data
+                    );
+                chatBubble.id = this.msgCounter++;
+                sender.showChatBubble(chatBubble);
+            }
+        });
+
         // this.initSocketEvents();
         sessionManager.waitForId().then(() => {
             this.initializeScene();
