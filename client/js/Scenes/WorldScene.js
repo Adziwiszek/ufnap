@@ -37,8 +37,6 @@ class WorldScene extends Phaser.Scene {
 
         sessionManager.connect(this.scene.key);
 
-
-        console.log(this.physics.add)
         // this.initSocketEvents();
 
         this.coom = 42;
@@ -99,8 +97,6 @@ class WorldScene extends Phaser.Scene {
         ));
         this.players[id] = p;
         this.players[id].sprite.setDepth(1000);
-        console.log('added new player to the scene!');
-        console.log(this.players[id]);
     }
 
     /**

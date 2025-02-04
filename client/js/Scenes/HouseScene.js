@@ -5,6 +5,7 @@ import { Player } from '../player.js';
 
 function createPlayerSprite(scene, tint=0xf24f44, x=200, y=200) {
     console.log('dupaa');
+    console.log(scene.key);
     if (!scene.physics || !scene.physics.add) {
         console.error('Physics system is not initialized!');
         console.error(scene.physics.add)
@@ -23,14 +24,13 @@ function addNewPlayer(scene, x, y, id) {
     let p = new Player(x, y, this);
     let tint = id === scene.myID ? 0x4287f5 : 0xff9c66;
     p.setSprite(createPlayerSprite(
+        scene,
         tint,
         x,
         y
     ));
     scene.players[id] = p;
     scene.players[id].sprite.setDepth(1000);
-    console.log('added new player to the scene!');
-    console.log(scene.players[id]);
 }
 class HouseScene extends WorldScene {
     constructor () {
@@ -48,10 +48,9 @@ class HouseScene extends WorldScene {
         super.create();
         sessionManager.on('initMessage', (message) => {
             this.myID = message.id;
-            addNewPlayer(message.x, message.y, message.id);
+            addNewPlayer(this, message.x, message.y, message.id);
             this.focusCamera(message.id);
         });
-        console.log('creating house scene!');
 
         sessionManager.on('playerMoved', (message) => {
             if(this.players[message.id]) {

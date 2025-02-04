@@ -67,6 +67,7 @@ class SessionManager {
 
     removeAllListeners(eventName) {
         if(this.eventListeners[eventName]) {
+            this.socket.off(eventName);
             delete this.eventListeners[eventName];
         }
     }
