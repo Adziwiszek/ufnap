@@ -43,6 +43,10 @@ class TestLobbyScene extends WorldScene {
         this.houseTeleporter = addTeleporter(
             this, 
             () => { 
+                for(let id in this.players) {
+                    this.deletePlayer(id);
+                }
+
                 sessionManager.removeAllListeners('initMessage');
                 sessionManager.removeAllListeners('playerMoved');
                 sessionManager.removeAllListeners('newPlayer');
@@ -51,7 +55,9 @@ class TestLobbyScene extends WorldScene {
                 sessionManager.removeAllListeners('playerDisconnected');
                 sessionManager.removeAllListeners('changeRoom');
 
-                this.scene.start('HouseScene', { sm: this.sessionManager }); 
+                sessionManager.emit('changeRoom', { newRoom: 'HouseScene' });
+
+                this.scene.start('HouseScene'); 
             }, 
             {x: 400, y: 400}
         );

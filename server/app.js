@@ -37,18 +37,21 @@ io.on('connection', (socket) => {
         // Add player to the room
         socket.join(sceneName);
 
+        if(!players[socket.id]) {
+            players[socket.id] = { x: 99, y: 100, currentRoom: sceneName};
+            console.log(`create player with id = ${socket.id}`);
+        }
+
         // Send players that are already in this room
         const roomPlayers = {};
         for(const id in players) {
+            if(id == socket.id) continue;
             if(players[id].currentRoom === sceneName) {
                 roomPlayers[id] = players[id];
             }
         }
         io.to(socket.id).emit('currentPlayers', roomPlayers);
 
-        // Initialize player
-        players[socket.id] = { x: 99, y: 100, currentRoom: sceneName};
-        console.log(`create player with id = ${socket.id}`);
     
         io.to(socket.id).emit('initMessage', {
           id: socket.id,
@@ -111,8 +114,9 @@ io.on('connection', (socket) => {
         socket.broadcast.to(currentRoom).emit('playerDisconnected', { id: socket.id });
 
         socket.leave(player.currentRoom);
-        socket.join(newRoom);
+        //socket.join(newRoom);
         player.currentRoom = newRoom;
+        console.log(players);
 
         // notify other players in this room
         socket.broadcast.to(newRoom).emit('newPlayer', { id: socket.id, x: player.x, y: player.y });

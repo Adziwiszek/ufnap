@@ -247,8 +247,8 @@ class WorldScene extends Phaser.Scene {
     }
 
     handleAddingExistingPlayers(players) {
-        console.log('adding existing players');
         for(let id in players) {
+            console.log('adding a player');
             this.addNewPlayer(
                 players[id].x,
                 players[id].y,
@@ -258,6 +258,9 @@ class WorldScene extends Phaser.Scene {
     }
 
     handleAddingNewPlayer(message) {
+        if(this.players[message.id]) {
+            return;
+        }
         console.log('new player joined!');
         console.log(`player id = ${message.id}`);
         this.addNewPlayer(message.x, message.y, message.id);
@@ -266,6 +269,10 @@ class WorldScene extends Phaser.Scene {
     handlePlayerDisconnected(message) {
         console.log('player disconnected!');
         const id = message.id;
+        this.deletePlayer(id);
+    }
+
+    deletePlayer(id) {
         const player = this.players[id];
         if (player && player.sprite) {
             player.sprite.destroy();
