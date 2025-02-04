@@ -1,4 +1,4 @@
-import socket from '/socket.js';
+import sessionManager from "./SessionManager.js";
 
 // eslint-disable-next-line no-unused-vars
 let myID = null;
@@ -9,23 +9,13 @@ window.addEventListener('load', () => {
 
     function sendMessage() {
         if (txtmessage.value.trim() !== '') {
-            socket.emit('chatMessage', txtmessage.value);
+            sessionManager.emit('chatMessage', txtmessage.value);
             txtmessage.value = '';
         }
     };
 
-    socket.on('initMessages', (message) => {
-        if(message.id) {
-            myID = message.id;
-        }
-    });
 
-    /*socket.on('message', function(data) {
-        var t = document.getElementById('time');
-        t.innerHTML = data;
-    });*/
-
-    socket.on('chatMessage', (message) => {
+    sessionManager.on('chatMessage', (message) => {
         // console.log(`client received: ${message.data}`);
         if (message && message.data) {
             let msg = document.getElementById('messages');
@@ -49,13 +39,11 @@ window.addEventListener('load', () => {
 
     window.addEventListener('keydown', (event) => {
         if (document.activeElement === txtmessage) {
-            // Allow normal typing inside the input box.
             return;
         }
 
         if (event.key === ' ') {
-            event.preventDefault(); // Prevent space scrolling.
-            console.log('Space pressed globally');
+            event.preventDefault(); 
         }
     });
 });

@@ -1,13 +1,20 @@
-import socket from './../socket.js';
 import {Player, bubbleTextPadding} from './../player.js';
+import sessionManager from './../SessionManager.js';
 
 const maxTextRow = 20;
 
 // eslint-disable-next-line no-undef
 class WorldScene extends Phaser.Scene {
-    constructor () {
-       super('WorldScene');
-       WorldScene.instance = this;
+/**
+ * WorldScene is a template class for other scenes.
+ * It has basic functionalities, like moving player in update(),
+ * adding players etc.
+ */
+    constructor ({key: sceneName}) {
+        super({key: sceneName});
+        this.idReadyPromise = new Promise((resolve) => {
+            this.resolveIdPromise = resolve;
+        })
     }
 
     preload ()
@@ -16,29 +23,41 @@ class WorldScene extends Phaser.Scene {
     }
 
     create () {
-        this.worldWidth = 1000;
-        this.worldHeight = 1000;
         this.players = {};
-        this.msgCounter = 0;
         this.myID = null; 
+        this.messages = {};
+
+        this.worldWidth = 1024;
+        this.worldHeight = 1024;
+        this.msgCounter = 0;
 
         this.cursors = this.input.keyboard.createCursorKeys();
         this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);
 
-        this.initSocketEvents();
+        sessionManager.connect(this.scene.key);
+
+        // this.initSocketEvents();
+        sessionManager.on('initMessage', this.initPlayer.bind(this));
+        sessionManager.on('playerMoved', this.updatePlayerPosition.bind(this));
+        sessionManager.on('newPlayer', this.handleAddingNewPlayer.bind(this));
+        sessionManager.on('currentPlayers', this.handleAddingExistingPlayers.bind(this));
+        sessionManager.on('chatMessage', this.handlePlayerMessage.bind(this));
+        sessionManager.on('playerDisconnected', this.handlePlayerDisconnected.bind(this));
+
+        this.coom = 42;
     }
 
     update() {
         if (this.cursors.left.isDown) {
-            socket.emit('move', 'left');
+            sessionManager.emit('move', 'left');
         } else if (this.cursors.right.isDown) {
-            socket.emit('move', 'right');
+            sessionManager.emit('move', 'right');
         }
 
         if (this.cursors.up.isDown) {
-            socket.emit('move', 'up');
+            sessionManager.emit('move', 'up');
         } else if (this.cursors.down.isDown) {
-            socket.emit('move', 'down');
+            sessionManager.emit('move', 'down');
         }
     }
 
@@ -52,6 +71,12 @@ class WorldScene extends Phaser.Scene {
      * Player sprite
      */
     createPlayerSprite(tint=0xf24f44, x=200, y=200) {
+        if (!this.physics || !this.physics.add) {
+            console.error('Physics system is not initialized!');
+            console.error(this.physics.add)
+            return;
+        }     
+
         let newPlayer = this.physics.add
             .sprite(x, y, 'player')
         newPlayer.setScale(0.1);
@@ -76,6 +101,7 @@ class WorldScene extends Phaser.Scene {
             y
         ));
         this.players[id] = p;
+        this.players[id].sprite.setDepth(1000);
     }
 
     /**
@@ -191,68 +217,88 @@ class WorldScene extends Phaser.Scene {
             this.worldWidth, this.worldHeight);
     }
 
-    /**
-     * Initializes socket events
-     */
-    initSocketEvents() {
-        socket.emit('clientReady');
-        socket.on('initMessage', (message) => {
-            if(message.id) {
-                this.myID = message.id;
-                this.addNewPlayer(message.x, message.y, this.myID);
-                this.focusCamera(this.myID);
-            }
-            if(message.worldHeight && message.worldWidth) {
-                this.updateWorldSize(
-                    message.worldHeight,
-                    message.worldWidth
-                );
-            }
-        });
-
-        socket.on('currentPlayers', (players) => {
-            for(let id in players) {
-                this.addNewPlayer(
-                    players[id].x,
-                    players[id].y,
-                    id
-                );
-            }
-        }); 
-        
-        socket.on('newPlayer', ({id, x, y}) => {
-            console.log('new player!');
-            this.addNewPlayer(x, y, id);
-        });
-            
-        socket.on('playerMoved', ({ id, x, y }) => {
-            if (this.players[id]) {
-                this.players[id].setPosition(x, y);
-            }
-        });
-        
-        socket.on('playerDisconnected', (id) => {
-            const player = this.players[id];
-            if (player && player.sprite) {
-                player.sprite.destroy();
-            }
-            delete this.players[id];
-        });
-
-        socket.on('chatMessage', (message) => {
-            let sender = this.players[message.id];
-            if (sender) {
-                const chatBubble =
-                    this.createChatBubble(
-                        sender.x,
-                        sender.y,
-                        message.data
-                    );
-                chatBubble.id = this.msgCounter++;
-                sender.showChatBubble(chatBubble);
-            }
-        });
+    waitForId() {
+        return this.idReadyPromise;
     }
+
+    initPlayer(message) {
+        this.myID = message.id;
+        this.addNewPlayer(message.x, message.y, message.id);
+        this.focusCamera(message.id);
+    }
+
+    updatePlayerPosition(message) {
+        const player = this.players[message.id];
+        player.setPosition(message.x, message.y);
+    }
+
+    handlePlayerMessage(message) {
+        let sender = this.players[message.id];
+        if (sender) {
+            const chatBubble =
+                this.createChatBubble(
+                    sender.x,
+                    sender.y,
+                    message.data
+                );
+            chatBubble.id = this.msgCounter++;
+            sender.showChatBubble(chatBubble);
+        }
+    }
+
+    handleAddingExistingPlayers(players) {
+        for(let id in players) {
+            console.log('adding a player');
+            this.addNewPlayer(
+                players[id].x,
+                players[id].y,
+                id
+            );
+        }
+    }
+
+    handleAddingNewPlayer(message) {
+        if(this.players[message.id]) {
+            return;
+        }
+        console.log('new player joined!');
+        console.log(`player id = ${message.id}`);
+        this.addNewPlayer(message.x, message.y, message.id);
+    }
+
+    handlePlayerDisconnected(message) {
+        console.log('player disconnected!');
+        const id = message.id;
+        this.deletePlayer(id);
+    }
+
+    deletePlayer(id) {
+        const player = this.players[id];
+        if (player && player.sprite) {
+            player.sprite.destroy();
+        }
+        delete this.players[id];
+    }
+
+    handleSwitchingToNewScene(sceneName) {
+        for(let id in this.players) {
+            this.deletePlayer(id);
+        }
+
+        sessionManager.removeAllListeners('initMessage');
+        sessionManager.removeAllListeners('playerMoved');
+        sessionManager.removeAllListeners('newPlayer');
+        sessionManager.removeAllListeners('currentPlayers');
+        sessionManager.removeAllListeners('chatMessage');
+        sessionManager.removeAllListeners('playerDisconnected');
+        sessionManager.removeAllListeners('changeRoom');
+
+        sessionManager.emit('changeRoom', { newRoom: sceneName });
+
+        this.scene.start(sceneName); 
+    }
+
+
 }
 
 export default WorldScene;
