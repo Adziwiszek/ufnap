@@ -10,14 +10,10 @@ class TestLobbyScene extends WorldScene {
 
     preload() {
         super.preload();
-        
-        this.load.image('grass_tileset', '/assets/grassTileset.png');
     }
-
 
     create() {
         super.create();
-
 
         // this.initSocketEvents();
         sessionManager.waitForId().then(() => {
@@ -43,21 +39,7 @@ class TestLobbyScene extends WorldScene {
         this.houseTeleporter = addTeleporter(
             this, 
             () => { 
-                for(let id in this.players) {
-                    this.deletePlayer(id);
-                }
-
-                sessionManager.removeAllListeners('initMessage');
-                sessionManager.removeAllListeners('playerMoved');
-                sessionManager.removeAllListeners('newPlayer');
-                sessionManager.removeAllListeners('currentPlayers');
-                sessionManager.removeAllListeners('chatMessage');
-                sessionManager.removeAllListeners('playerDisconnected');
-                sessionManager.removeAllListeners('changeRoom');
-
-                sessionManager.emit('changeRoom', { newRoom: 'HouseScene' });
-
-                this.scene.start('HouseScene'); 
+                this.handleSwitchingToNewScene('HouseScene');
             }, 
             {x: 400, y: 400}
         );

@@ -10,7 +10,6 @@ class HouseScene extends WorldScene {
     preload() {
         super.preload();
         
-        this.load.image('grass_tileset', '/assets/pinkGrassTileset.png');
     }
 
     create() {
@@ -27,7 +26,7 @@ class HouseScene extends WorldScene {
         this.cameras.main.setZoom(1.4);
 
         const map = this.make.tilemap({ width: 224, height: 224, tileWidth: 32, tileHeight: 32 });
-        const tiles = map.addTilesetImage('grass_tileset', null, 32, 32);
+        const tiles = map.addTilesetImage('pink_grass_tileset', null, 32, 32);
         
         const layer = map.createBlankLayer('layer1', tiles);
         layer.randomize(0, 0, map.width, map.height, [ 0, 1 ]);

@@ -279,6 +279,26 @@ class WorldScene extends Phaser.Scene {
         }
         delete this.players[id];
     }
+
+    handleSwitchingToNewScene(sceneName) {
+        for(let id in this.players) {
+            this.deletePlayer(id);
+        }
+
+        sessionManager.removeAllListeners('initMessage');
+        sessionManager.removeAllListeners('playerMoved');
+        sessionManager.removeAllListeners('newPlayer');
+        sessionManager.removeAllListeners('currentPlayers');
+        sessionManager.removeAllListeners('chatMessage');
+        sessionManager.removeAllListeners('playerDisconnected');
+        sessionManager.removeAllListeners('changeRoom');
+
+        sessionManager.emit('changeRoom', { newRoom: sceneName });
+
+        this.scene.start(sceneName); 
+    }
+
+
 }
 
 export default WorldScene;
