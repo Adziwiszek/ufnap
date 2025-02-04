@@ -83,7 +83,7 @@ io.on('connection', (socket) => {
         console.log(players[socket.id], '\n');
         if(players[socket.id]) {
             const playerRoom = players[socket.id].currentRoom;
-            io.in(playerRoom).emit('playerDisconnected', socket.id);
+            io.in(playerRoom).emit('playerDisconnected', { id: socket.id });
         }
         delete players[socket.id];
     });
@@ -106,8 +106,9 @@ io.on('connection', (socket) => {
         console.log(players[socket.id]);
         const player = players[socket.id];
         const currentRoom = players[socket.id].currentRoom;
+
         // tell players in old room about disconnect
-        socket.broadcast.to(currentRoom).emit('playerDisconnected');
+        socket.broadcast.to(currentRoom).emit('playerDisconnected', { id: socket.id });
 
         socket.leave(player.currentRoom);
         socket.join(newRoom);
