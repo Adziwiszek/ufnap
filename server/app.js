@@ -89,6 +89,7 @@ io.on('connection', (socket) => {
     });
     // handling chat
     socket.on('chatMessage', (data) =>{
+        console.log(`sender id = ${socket.id}`);
         const player = players[socket.id];
         if(!player) {
             console.error('received message from null player!');

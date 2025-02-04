@@ -1,4 +1,3 @@
-import socket from './../socket.js';
 import {Player, bubbleTextPadding} from './../player.js';
 import sessionManager from './../SessionManager.js';
 
@@ -38,6 +37,12 @@ class WorldScene extends Phaser.Scene {
         sessionManager.connect(this.scene.key);
 
         // this.initSocketEvents();
+        sessionManager.on('initMessage', this.initPlayer.bind(this));
+        sessionManager.on('playerMoved', this.updatePlayerPosition.bind(this));
+        sessionManager.on('newPlayer', this.handleAddingNewPlayer.bind(this));
+        sessionManager.on('currentPlayers', this.handleAddingExistingPlayers.bind(this));
+        sessionManager.on('chatMessage', this.handlePlayerMessage.bind(this));
+        sessionManager.on('playerDisconnected', this.handlePlayerDisconnected.bind(this));
 
         this.coom = 42;
     }
@@ -216,69 +221,56 @@ class WorldScene extends Phaser.Scene {
         return this.idReadyPromise;
     }
 
-    /**
-     * Initializes socket events
-     */
-    initSocketEvents() {
-        socket.emit('clientReady', {key: this.scene.key});
-        socket.on('initMessage', (message) => {
-            console.log(`cuming = ${this.coom}`);
-            if(message.id) {
-                this.myID = message.id;
-                this.resolveIdPromise(this.myID);
-                this.addNewPlayer(message.x, message.y, this.myID);
-                this.focusCamera(this.myID);
-            }
-            if(message.worldHeight && message.worldWidth) {
-                this.updateWorldSize(
-                    message.worldHeight,
-                    message.worldWidth
-                );
-            }
-        });
+    initPlayer(message) {
+        this.myID = message.id;
+        this.addNewPlayer(message.x, message.y, message.id);
+        this.focusCamera(message.id);
+    }
 
-        socket.on('currentPlayers', (players) => {
-            for(let id in players) {
-                this.addNewPlayer(
-                    players[id].x,
-                    players[id].y,
-                    id
-                );
-            }
-        }); 
-        
-        socket.on('newPlayer', ({id, x, y}) => {
-            console.log('new player joined!');
-            this.addNewPlayer(x, y, id);
-        });
-            
-        socket.on('playerMoved', ({ id, x, y }) => {
-            if (this.players[id]) {
-                this.players[id].setPosition(x, y);
-            }
-        });
-        
-        socket.on('playerDisconnected', (id) => {
-            const player = this.players[id];
-            if (player && player.sprite) {
-                player.sprite.destroy();
-            }
-            delete this.players[id];
-        });
+    updatePlayerPosition(message) {
+        const player = this.players[message.id];
+        player.setPosition(message.x, message.y);
+    }
 
-        socket.on('chatMessage', (message) => {
-            let sender = this.players[message.id];
-            if (sender) {
-                const chatBubble =
-                    this.createChatBubble(
-                        sender.x,
-                        sender.y,
-                        message.data
-                    );
-                chatBubble.id = this.msgCounter++;
-                sender.showChatBubble(chatBubble);
-            }
-        });
+    handlePlayerMessage(message) {
+        let sender = this.players[message.id];
+        if (sender) {
+            const chatBubble =
+                this.createChatBubble(
+                    sender.x,
+                    sender.y,
+                    message.data
+                );
+            chatBubble.id = this.msgCounter++;
+            sender.showChatBubble(chatBubble);
+        }
+    }
+
+    handleAddingExistingPlayers(players) {
+        console.log('adding existing players');
+        for(let id in players) {
+            this.addNewPlayer(
+                players[id].x,
+                players[id].y,
+                id
+            );
+        }
+    }
+
+    handleAddingNewPlayer(message) {
+        console.log('new player joined!');
+        console.log(`player id = ${message.id}`);
+        this.addNewPlayer(message.x, message.y, message.id);
+    }
+
+    handlePlayerDisconnected(message) {
+        console.log('player disconnected!');
+        const id = message.id;
+        const player = this.players[id];
+        if (player && player.sprite) {
+            player.sprite.destroy();
+        }
+        delete this.players[id];
     }
 }
 

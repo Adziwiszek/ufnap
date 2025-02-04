@@ -14,54 +14,10 @@ class TestLobbyScene extends WorldScene {
         this.load.image('grass_tileset', '/assets/grassTileset.png');
     }
 
-    initPlayer(message) {
-        this.myID = message.id;
-        this.addNewPlayer(message.x, message.y, message.id);
-        this.focusCamera(message.id);
-    }
-
-    updatePlayerPosition(message) {
-        const player = this.players[message.id];
-        player.setPosition(message.x, message.y);
-    }
 
     create() {
         super.create();
 
-        sessionManager.on('initMessage', this.initPlayer.bind(this));
-
-        sessionManager.on('playerMoved', this.updatePlayerPosition.bind(this));
-
-        sessionManager.on('newPlayer', (message) => {
-            console.log('new player joined!');
-            console.log(`player id = ${message.id}`);
-            this.addNewPlayer(message.x, message.y, message.id);
-        });
-
-        sessionManager.on('currentPlayers', (players) => {
-            console.log('adding existing players');
-            for(let id in players) {
-                this.addNewPlayer(
-                    players[id].x,
-                    players[id].y,
-                    id
-                );
-            }
-        });
-
-        sessionManager.on('chatMessage', (message) => {
-            let sender = this.players[message.id];
-            if (sender) {
-                const chatBubble =
-                    this.createChatBubble(
-                        sender.x,
-                        sender.y,
-                        message.data
-                    );
-                chatBubble.id = this.msgCounter++;
-                sender.showChatBubble(chatBubble);
-            }
-        });
 
         // this.initSocketEvents();
         sessionManager.waitForId().then(() => {
@@ -89,7 +45,12 @@ class TestLobbyScene extends WorldScene {
             () => { 
                 sessionManager.removeAllListeners('initMessage');
                 sessionManager.removeAllListeners('playerMoved');
-                sessionManager.emit('changeRoom', { newRoom: 'HouseScene'});
+                sessionManager.removeAllListeners('newPlayer');
+                sessionManager.removeAllListeners('currentPlayers');
+                sessionManager.removeAllListeners('chatMessage');
+                sessionManager.removeAllListeners('playerDisconnected');
+                sessionManager.removeAllListeners('changeRoom');
+
                 this.scene.start('HouseScene', { sm: this.sessionManager }); 
             }, 
             {x: 400, y: 400}

@@ -58,7 +58,7 @@ class HouseScene extends WorldScene {
             }
         });
 
-        this.waitForId().then(() => {
+        sessionManager.waitForId().then(() => {
             this.initializeScene();
         });
         // this.initSocketEvents();
