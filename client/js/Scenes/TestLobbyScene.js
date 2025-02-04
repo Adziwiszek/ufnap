@@ -32,6 +32,12 @@ class TestLobbyScene extends WorldScene {
 
         sessionManager.on('playerMoved', this.updatePlayerPosition.bind(this));
 
+        sessionManager.on('newPlayer', (message) => {
+            console.log('new player joined!');
+            console.log(`player id = ${message.id}`);
+            this.addNewPlayer(message.x, message.y, message.id);
+        });
+
         // this.initSocketEvents();
         sessionManager.waitForId().then(() => {
             this.initializeScene();
