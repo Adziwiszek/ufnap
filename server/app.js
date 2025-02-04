@@ -48,6 +48,7 @@ io.on('connection', (socket) => {
 
         // Initialize player
         players[socket.id] = { x: 99, y: 100, currentRoom: sceneName};
+        console.log(`create player with id = ${socket.id}`);
     
         io.to(socket.id).emit('initMessage', {
           id: socket.id,
@@ -79,7 +80,7 @@ io.on('connection', (socket) => {
     // Handle disconnect
     socket.on('disconnect', () => {
         console.log(`Player disconnected: ${socket.id}`);
-        console.log(players[socket.id]);
+        console.log(players[socket.id], '\n');
         if(players[socket.id]) {
             const playerRoom = players[socket.id].currentRoom;
             io.in(playerRoom).emit('playerDisconnected', socket.id);
@@ -88,11 +89,15 @@ io.on('connection', (socket) => {
     });
     // handling chat
     socket.on('chatMessage', (data) =>{
-    const player = players[socket.id];
-    io.in(player.currentRoom).emit('chatMessage', {
-        id: socket.id, 
-        data: data
-    }); 
+        const player = players[socket.id];
+        if(!player) {
+            console.error('received message from null player!');
+            return;
+        }
+        io.in(player.currentRoom).emit('chatMessage', {
+            id: socket.id, 
+            data: data
+        }); 
     })
     // Handle player changing rooms
     socket.on('changeRoom', ({ newRoom }) => {

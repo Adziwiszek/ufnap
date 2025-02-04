@@ -3,6 +3,7 @@ import socket from './../socket.js';
 class SessionManager {
     constructor(){
         this.socket = socket;
+
         this.connected = false;
         this.connectionListeners = [];
         this.eventListeners = {};
@@ -28,8 +29,10 @@ class SessionManager {
             this.resolveIdPromise(this.myID);
 
             this.isConnected = true;
-            console.log('Connected to server');
             this.connectionListeners.forEach(listener => listener());
+
+            console.log('Connected to server');
+            console.log(`my id = ${this.socket.id}`);
         });
 
         this.socket.on('disconnect', () => {
@@ -70,18 +73,6 @@ class SessionManager {
             this.socket.off(eventName);
             delete this.eventListeners[eventName];
         }
-    }
-
-    initSession() {
-        socket.emit('clientReady');
-        socket.on('initMessage', (message) => {
-            if(!message.id) {
-                console.error('Server did not send id!');
-                return;
-            }
-            this.myID = message.id;
-            this.connected = true;
-        });
     }
 
     joinScene(sceneName) {

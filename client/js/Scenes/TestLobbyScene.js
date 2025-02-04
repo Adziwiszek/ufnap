@@ -38,6 +38,17 @@ class TestLobbyScene extends WorldScene {
             this.addNewPlayer(message.x, message.y, message.id);
         });
 
+        sessionManager.on('currentPlayers', (players) => {
+            console.log('adding existing players');
+            for(let id in players) {
+                this.addNewPlayer(
+                    players[id].x,
+                    players[id].y,
+                    id
+                );
+            }
+        });
+
         // this.initSocketEvents();
         sessionManager.waitForId().then(() => {
             this.initializeScene();
