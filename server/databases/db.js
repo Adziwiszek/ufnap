@@ -13,12 +13,7 @@ class dbrepository {
   }
 
   async getConnection() {
-    try {
-      const connection = await this.pool.getConnection();
-      return connection;
-    } catch (err) {
-      throw err;
-    }
+    return await this.pool.getConnection();
   }
 
   async userExists(username, conn=null) {
@@ -50,7 +45,7 @@ class dbrepository {
       conn = await this.getConnection();
       const query = 'INSERT INTO Users (username, password_hash, created_at) VALUES (?, ?, CURRENT_DATE())';
       const [result] = await conn.execute(query, [username, pwd_hash]);
-      if(result,affectedRows === 1) console.log('Inserted user:', result);
+      if(result.affectedRows === 1) console.log('Inserted user:', result);
       return result.affectedRows === 1 ? 0 : -1;
     } catch (err) {
       console.error("Error while creating user:", err);
