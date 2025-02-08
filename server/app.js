@@ -195,7 +195,8 @@ io.on('connection', (socket) => {
 
       // notify other players in this room
         socket.broadcast.to(newRoom).emit('newPlayer', { id: socket.id, x: player.x, y: player.y });
-  });
+    });
+});
 
   
 server.listen(3000, () => {
