@@ -54,6 +54,37 @@ class dbrepository {
       conn.release();
     }
   }
+
+
+async getUsers(conn=null) {
+  try{
+    if(conn == null) conn = await this.getConnection();
+    const [rows] = await conn.execute('SELECT username FROM Users');
+    return rows.map(row => row.username);
+  } catch (err) {
+    console.error("Error while fetching users:", err);
+    throw err;
+  } finally {
+    if (conn) conn.release();
+  }
+}
+
+async validatePassword(username, passwordHash, conn=null) {
+  try{
+    if(conn == null) conn = await this.getConnection();
+    const [rows] = await conn.execute(
+      'SELECT COUNT(*) AS count FROM Users WHERE username = ? AND password_hash = ?',
+      [username, passwordHash]
+    );
+    return rows[0].count > 0;
+  } catch (err) {
+    console.error("Error while validating password:", err);
+    throw err;
+  } finally {
+    if (conn) conn.release();
+  }
+}
+
 }
 
 const dbrepo = new dbrepository();

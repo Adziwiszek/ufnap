@@ -4,6 +4,8 @@ const socketIO = require('socket.io');
 const http = require('http');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
+const dbrepo = require('./databases/db.js');
+
 
 const app = express();
 const server = http.createServer(app);
@@ -31,25 +33,35 @@ app.get('/', (req, res) => {
 });
 
 // Obsługa logowania
-app.post('/login', (req, res) => {
-
-  const users = [
-    { login: "ola", password: bcrypt.hashSync("123", 10) }
-  ];
-
+app.post('/login', async (req, res) => {
   const { login, password } = req.body;
-
-  const user = users.find(u => u.login === login);
-  if (user && bcrypt.compareSync(password, user.password)) {
+  
+  try {
+    const userExists = await dbrepo.userExists(login);
+    if (!userExists) {
+      return res.send(`
+        <script>
+          alert('Błędny login lub hasło!');
+          window.location.href = "/";
+        </script>
+      `);
+    }
+    
+    const validPassword = await dbrepo.validatePassword(login, password);
+    if (validPassword) {
       req.session.user = login;
       return res.redirect('/game');
-  } else {
-    return res.send(`
-      <script>
-        alert('Błędny login lub hasło!');
-        window.location.href = "/";
-      </script>
-    `);
+    } else {
+      return res.send(`
+        <script>
+          alert('Błędny login lub hasło!');
+          window.location.href = "/";
+        </script>
+      `);
+    }
+  } catch (err) {
+    console.error("Login error:", err);
+    return res.status(500).send("Internal Server Error");
   }
 });
 
