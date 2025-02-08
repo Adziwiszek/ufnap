@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const socketIO = require('socket.io');
 const http = require('http');
+const bcrypt = require('bcrypt');
+const session = require('express-session');
 
 const app = express();
 const server = http.createServer(app);
@@ -12,8 +14,41 @@ app.use(express.static(path.join(__dirname, '../client/js')));
 app.use(express.static(path.join(__dirname, '../client/css')));
 app.use(express.static(path.join(__dirname, '../client')));
 
+// Logowanie
+
+app.use(express.urlencoded({ extended: true })); 
+
+app.use(session({
+  secret: 'klucz',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false }
+}));
+
 app.get('/', (req, res) => {
     res.render('index.html');
+});
+
+// Obsługa logowania
+app.post('/login', (req, res) => {
+
+  const users = [
+    { login: "ola", password: bcrypt.hashSync("123", 10) }
+  ];
+
+  const { login, password } = req.body;
+
+  const user = users.find(u => u.login === login);
+  if (user && bcrypt.compareSync(password, user.password)) {
+      req.session.user = login;
+      return res.redirect('/game');
+  } else {
+      return res.send('bleeh');
+  }
+});
+
+app.get('/game', (req, res) => {
+  res.redirect('game.html');
 });
 
 let players = {}
@@ -73,6 +108,7 @@ io.on('connection', (socket) => {
   });
   // handling chat
   socket.on('chatMessage', (data) =>{
+
     // console.log(`server received: ${data}`);
     io.emit('chatMessage', {
       id: socket.id, 
