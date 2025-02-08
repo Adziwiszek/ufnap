@@ -319,7 +319,7 @@ class WorldScene extends Phaser.Scene {
         sessionManager.removeAllListeners('changeRoom');
 
         sessionManager.emit('changeRoom', { newRoom: sceneName });
-        sessionManager.resetIdPromise();
+
 
         this.scene.start(sceneName, { myID: this.myID }); 
     }

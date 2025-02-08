@@ -1,5 +1,6 @@
 import WorldScene from './WorldScene.js';
 import sessionManager from '../SessionManager.js';
+import InteractiveObject from '../InteractiveObject.js';
 
 class TestLobbyScene extends WorldScene {
     constructor () {
@@ -34,20 +35,11 @@ class TestLobbyScene extends WorldScene {
         layer.randomize(0, 0, map.width, map.height, [ 0, 1]);
 
         this.houseTeleporter = this.addTeleporterToScene(400, 400, 'HouseScene', this.myID);
-        // creating test teleporter
-        /*this.houseTeleporter = addTeleporter(
 
-            this, 
-            () => { 
-                this.handleSwitchingToNewScene('HouseScene');
-            }, 
-            {x: 400, y: 400}
-        );
-        this.physics.add.collider(
-            this.houseTeleporter.sprite,
-            this.players[this.myID].sprite,
-            this.houseTeleporter.callback
-        );*/
+
+        const testsprite = this.physics.add.sprite(300, 20, 'player');
+        this.testinter = new InteractiveObject(300, 20, testsprite);
+        this.testinter.addServerEventSender('dupa', { pid: this.myID });
     }
 
     update() {
