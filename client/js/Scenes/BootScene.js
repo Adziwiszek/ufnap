@@ -14,6 +14,9 @@ class BootScene extends Phaser.Scene
         this.load.image('teleporter', '/assets/teleporter.png');
         this.load.image('pink_grass_tileset', '/assets/pinkGrassTileset.png');
         this.load.image('grass_tileset', '/assets/grassTileset.png');
+
+        this.load.image('tileset', '/assets/tilesetv1.png');
+        this.load.tilemapTiledJSON('map', '/assets/lobbymap.json');
     }
 
     create ()

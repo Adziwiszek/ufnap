@@ -1,5 +1,5 @@
 import WorldScene from './WorldScene.js';
-import {addTeleporter} from './../SceneTeleporter.js';
+//import {addTeleporter} from './../SceneTeleporter.js';
 import sessionManager from '../SessionManager.js';
 
 class TestLobbyScene extends WorldScene {
@@ -24,17 +24,25 @@ class TestLobbyScene extends WorldScene {
     initializeScene() {
         this.cameras.main.setZoom(1.4);
 
-        const map = this.make.tilemap({ 
-            width: 224, 
-            height: 224, 
-            tileWidth: 32, 
-            tileHeight: 32 
-        });
-        const tiles = map.addTilesetImage('grass_tileset', null, 32, 32);
-        
-        const layer = map.createBlankLayer('layer1', tiles);
-        layer.randomize(0, 0, map.width, map.height, [ 0, 1]);
+        const map = this.make.tilemap({ key: 'map' });
+        const tileset = map.addTilesetImage('ufnapTiles', 'tileset');
+        const layer = map.createLayer('Tile Layer 1', tileset, 0, 0);
+        layer.setCollisionByProperty({ collidable: true });
 
+        // Debugging: Show collidable tiles in red
+        const debugGraphics = this.add.graphics();
+        layer.renderDebug(debugGraphics, {
+            tileColor: null, 
+            // eslint-disable-next-line no-undef
+            collidingTileColor: new Phaser.Display.Color(255, 0, 0, 100), 
+        });
+
+        console.log('Player sprite:', this.players[this.myID].sprite);
+        this.physics.add.collider(this.players[this.myID].sprite, layer); 
+        console.log('success!');
+
+
+        /*
         // creating test teleporter
         this.houseTeleporter = addTeleporter(
             this, 
@@ -48,6 +56,7 @@ class TestLobbyScene extends WorldScene {
             this.players[this.myID].sprite,
             this.houseTeleporter.callback
         );
+        */
     }
 
     update() {

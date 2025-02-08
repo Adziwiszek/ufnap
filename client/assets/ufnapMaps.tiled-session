@@ -1,0 +1,30 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
+        "ufnapTiles.tsx": {
+            "scaleInEditor": 1
+        }
+    },
+    "last.exportedFilePath": "/home/adziw/Projects/ufnap/client/assets",
+    "last.imagePath": "/home/adziw/Projects/ufnap/client/assets",
+    "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
+    "map.lastUsedFormat": "tmx",
+    "openFiles": [
+    ],
+    "project": "ufnapMaps.tiled-project",
+    "property.type": "bool",
+    "recentFiles": [
+        "ufnapTiles.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx"
+}
