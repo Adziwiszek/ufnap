@@ -64,20 +64,10 @@ app.post('/login', async (req, res) => {
 });
 
 //Obsługa rejestracji
-app.post('/register', (req, res) => {
-  const { login, password, password2} = req.body;
 
-  // TODO: check if user with that nick already exists
-
-  // if (false) { 
-  //   return res.send(`
-  //     <script>
-  //       alert('Użytkownik o tym loginie już istnieje!');
-  //       window.location.href = "/";
-  //     </script>
-  //   `);
-  // }
-
+app.post('/register', async (req, res) => {
+  const { login, password, password2 } = req.body;
+  
   if (password !== password2) {
     return res.send(`
       <script>
@@ -86,17 +76,32 @@ app.post('/register', (req, res) => {
       </script>
     `);
   }
-
-  const hashedPassword = bcrypt.hashSync(password, 10);
-
-  return res.send(`
-    <script>
-      alert('`+login+hashedPassword+`');
-      window.location.href = "/";
-    </script>
-  `);
+  
+  try {
+    const userExists = await dbrepo.userExists(login);
+    if (userExists) {
+      return res.send(`
+        <script>
+          alert('Użytkownik o tym loginie już istnieje!');
+          window.location.href = "/";
+        </script>
+      `);
+    }
+    
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    await dbrepo.createUser(login, hashedPassword);
+    
+    return res.send(`
+      <script>
+        alert('Rejestracja udana! Możesz się teraz zalogować.');
+        window.location.href = "/";
+      </script>
+    `);
+  } catch (err) {
+    console.error("Registration error:", err);
+    return res.status(500).send("Internal Server Error");
+  }
 });
-
 
 app.get('/game', (req, res) => {
   res.redirect('game.html');

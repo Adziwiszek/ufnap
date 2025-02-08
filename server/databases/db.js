@@ -36,7 +36,7 @@ class dbrepository {
   // 0 - Created user successfully
   // 1 - User with such nickname already exists
   // -1 - DB error
-  async createrUser(username, pwd_hash, conn=null) {
+  async createUser(username, pwd_hash, conn=null) {
     try{
       if(conn == null) conn = await this.getConnection();
       if(this.userExists(username, conn)){
