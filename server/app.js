@@ -12,8 +12,6 @@ const io = socketIO(server);
 app.use(express.static(path.join(__dirname, '../client')));
 app.use(express.static(path.join(__dirname, '../client/html')));
 app.use(express.static(path.join(__dirname, '../client/js')));
-app.use(express.static(path.join(__dirname, '../client/css')));
-app.use(express.static(path.join(__dirname, '../client')));
 
 // Logowanie
 
@@ -92,7 +90,7 @@ app.get('/game', (req, res) => {
   res.redirect('game.html');
 });
 
-let players = {}
+let players = {};
 
 /*setInterval( function() {
   var date = new Date().toString();
@@ -195,25 +193,10 @@ io.on('connection', (socket) => {
         player.currentRoom = newRoom;
         console.log(players);
 
-      io.emit('playerMoved', { id: socket.id, x: player.x, y: player.y });
+      // notify other players in this room
+        socket.broadcast.to(newRoom).emit('newPlayer', { id: socket.id, x: player.x, y: player.y });
   });
 
-  // Handle disconnect
-  socket.on('disconnect', () => {
-      // console.log(`Player disconnected: ${socket.id}`);
-      delete players[socket.id];
-      io.emit('playerDisconnected', socket.id);
-  });
-  // handling chat
-  socket.on('chatMessage', (data) =>{
-    // console.log(`server received: ${data}`);
-    io.emit('chatMessage', {
-      id: socket.id, 
-      data: data
-    }); // do wszystkich
-    //socket.emit('chat message', data); tylko do połączonego
-  })
-});
   
 server.listen(3000, () => {
     // var host = server.address().address;
