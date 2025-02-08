@@ -43,9 +43,47 @@ app.post('/login', (req, res) => {
       req.session.user = login;
       return res.redirect('/game');
   } else {
-      return res.send('bleeh');
+    return res.send(`
+      <script>
+        alert('Błędny login lub hasło!');
+        window.location.href = "/";
+      </script>
+    `);
   }
 });
+
+//Obsługa rejestracji
+app.post('/register', (req, res) => {
+  const { login, password, password2} = req.body;
+
+  if (false) { 
+    return res.send(`
+      <script>
+        alert('Użytkownik o tym loginie już istnieje!');
+        window.location.href = "/";
+      </script>
+    `);
+  }
+
+  if (password !== password2) {
+    return res.send(`
+      <script>
+        alert('Hasła nie są takie same!');
+        window.location.href = "/";
+      </script>
+    `);
+  }
+
+  const hashedPassword = bcrypt.hashSync(password, 10);
+
+  return res.send(`
+    <script>
+      alert('`+login+hashedPassword+`');
+      window.location.href = "/";
+    </script>
+  `);
+});
+
 
 app.get('/game', (req, res) => {
   res.redirect('game.html');
