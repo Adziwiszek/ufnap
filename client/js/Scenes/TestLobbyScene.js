@@ -26,21 +26,27 @@ class TestLobbyScene extends WorldScene {
 
         const map = this.make.tilemap({ key: 'map' });
         const tileset = map.addTilesetImage('ufnapTiles', 'tileset');
-        const layer = map.createLayer('Tile Layer 1', tileset, 0, 0);
-        layer.setCollisionByProperty({ collidable: true });
 
-        // Debugging: Show collidable tiles in red
+
+        // const backgroundLayer = map.createLayer('background', tileset, 0, 0);
+        // backgroundLayer.setCollisionByProperty({ collidable: true });
+
+        const wallLayer = map.createLayer('walls', tileset, 0, 0);
+        wallLayer.setCollisionByProperty({ collidable: true });
+
+        
+        // this.physics.add.collider(this.players[this.myID].sprite, wallLayer, () => {
+        //     console.log("Collision detected!");
+        // }); 
+
+        this.physics.add.collider(this.players[this.myID].sprite, wallLayer); 
+
         const debugGraphics = this.add.graphics();
-        layer.renderDebug(debugGraphics, {
+        wallLayer.renderDebug(debugGraphics, {
             tileColor: null, 
             // eslint-disable-next-line no-undef
             collidingTileColor: new Phaser.Display.Color(255, 0, 0, 100), 
         });
-
-        console.log('Player sprite:', this.players[this.myID].sprite);
-        this.physics.add.collider(this.players[this.myID].sprite, layer); 
-        console.log('success!');
-
 
         /*
         // creating test teleporter

@@ -11,7 +11,31 @@
         "": {
             "scaleInDock": 1
         },
+        "lobbymap.json": {
+            "scale": 1.1202083333333333,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 480.2678073275061,
+                "y": 319.5834108238795
+            }
+        },
+        "lobbymap.json#ufnapTiles": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "lobbymap.tmx": {
+            "scale": 1.1202083333333333,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 480.2678073275061,
+                "y": 319.5834108238795
+            }
+        },
+        "lobbymap.tmx#ufnapTiles": {
+            "scaleInDock": 1
+        },
         "ufnapTiles.tsx": {
+            "scaleInDock": 1.5,
             "scaleInEditor": 1
         }
     },
@@ -24,7 +48,8 @@
     "project": "ufnapMaps.tiled-project",
     "property.type": "bool",
     "recentFiles": [
-        "ufnapTiles.tsx"
+        "ufnapTiles.tsx",
+        "lobbymap.tmx"
     ],
     "tileset.lastUsedFormat": "tsx"
 }
