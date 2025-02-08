@@ -12,6 +12,8 @@ const io = socketIO(server);
 app.use(express.static(path.join(__dirname, '../client')));
 app.use(express.static(path.join(__dirname, '../client/html')));
 app.use(express.static(path.join(__dirname, '../client/js')));
+app.use(express.static(path.join(__dirname, '../client/css')));
+app.use(express.static(path.join(__dirname, '../client')));
 
 // Logowanie
 
@@ -204,7 +206,6 @@ io.on('connection', (socket) => {
   });
   // handling chat
   socket.on('chatMessage', (data) =>{
-
     // console.log(`server received: ${data}`);
     io.emit('chatMessage', {
       id: socket.id, 
