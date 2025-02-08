@@ -9,8 +9,74 @@
 </head>
 
 <body>
+
+
+    <div class="container" id="loginContainer">
+
+        <h1>
+            UFNAP
+        </h1>
+
+
+        <form action="/login" method="POST">
+            <h2>logowanie</h2>
+            <span class = "lewo">login</span>
+            <input type="text" name="login" placeholder="wpisz login" required><br>
+            <span class = "lewo">hasło</span>
+            <input type="password" name="password" placeholder="wpisz hasło" required><br>
+            <button type="submit">zaloguj</button>
+        </form>
+
+        <button class="secondary-btn" onclick="showRegister()">rejestracja</button>
+
+    </div>
+
+    <!-- Ekran rejestracji -->
+    <div class="container hidden" id="registerContainer">
+
+        <h1>
+            UFNAP
+        </h1>
+
+
+        <form action="/register" method="POST">
+
+            <h2>rejestracja</h2>
+
+            <span class = "lewo">login</span>
+            <input type="text" name="login" placeholder="wpisz login" required>
+            <span class = "lewo">hasło</span>
+            <input type="password" name="password" placeholder="wpisz hasło" required>
+            <span class = "lewo">potwórz hasło</span>
+            <input type="password" name="password2" placeholder="powtórz hasło" required>
+
+            <button type="submit">zarejestruj</button>
+
+        </form>
+        <button class="secondary-btn" onclick="showLogin()">logowanie</button>
+    </div>
+
+
     <h1>
         <a href="game.html">Play the game!</a>
     </h1>
+
+
 </body>
 </html>
+
+<script>
+
+    function showRegister() {
+        document.getElementById('loginContainer').classList.add('hidden');
+        document.getElementById('registerContainer').classList.remove('hidden');
+    }
+
+    function showLogin() {
+        document.getElementById('registerContainer').classList.add('hidden');
+        document.getElementById('loginContainer').classList.remove('hidden');
+    }
+
+</script>
+
+
