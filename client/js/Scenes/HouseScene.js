@@ -4,25 +4,25 @@ import sessionManager from '../SessionManager.js';
 class HouseScene extends WorldScene {
     constructor () {
        super({key: 'HouseScene'});
-       HouseScene.instance = this;
+    }
+
+    init(data) {
+        super.init(data);
     }
 
     preload() {
         super.preload();
-        
     }
 
     create() {
         super.create();
 
-        console.log('joinging house!');
         sessionManager.waitForId().then(() => {
             this.initializeScene();
         });
     }
 
     initializeScene() {
-        console.log('initializing house...');
         this.cameras.main.setZoom(1.4);
 
         const map = this.make.tilemap({ width: 224, height: 224, tileWidth: 32, tileHeight: 32 });
@@ -30,6 +30,8 @@ class HouseScene extends WorldScene {
         
         const layer = map.createBlankLayer('layer1', tiles);
         layer.randomize(0, 0, map.width, map.height, [ 0, 1 ]);
+
+        this.lobbyTeleporter = this.addTeleporterToScene(600, 400, 'TestLobbyScene', this.myID);
     }
 
     update() {

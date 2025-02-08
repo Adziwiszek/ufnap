@@ -1,11 +1,9 @@
 import WorldScene from './WorldScene.js';
-import {addTeleporter} from './../SceneTeleporter.js';
 import sessionManager from '../SessionManager.js';
 
 class TestLobbyScene extends WorldScene {
     constructor () {
        super({key: 'TestLobbyScene'});
-       TestLobbyScene.instance = this;
     }
 
     preload() {
@@ -35,8 +33,10 @@ class TestLobbyScene extends WorldScene {
         const layer = map.createBlankLayer('layer1', tiles);
         layer.randomize(0, 0, map.width, map.height, [ 0, 1]);
 
+        this.houseTeleporter = this.addTeleporterToScene(400, 400, 'HouseScene', this.myID);
         // creating test teleporter
-        this.houseTeleporter = addTeleporter(
+        /*this.houseTeleporter = addTeleporter(
+
             this, 
             () => { 
                 this.handleSwitchingToNewScene('HouseScene');
@@ -47,7 +47,7 @@ class TestLobbyScene extends WorldScene {
             this.houseTeleporter.sprite,
             this.players[this.myID].sprite,
             this.houseTeleporter.callback
-        );
+        );*/
     }
 
     update() {

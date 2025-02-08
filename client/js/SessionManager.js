@@ -8,9 +8,13 @@ class SessionManager {
         this.connectionListeners = [];
         this.eventListeners = {};
 
+        this.resetIdPromise();
+    }
+
+    resetIdPromise() {
         this.idReadyPromise = new Promise((resolve) => {
             this.resolveIdPromise = resolve;
-        })
+        });
     }
 
     waitForId() {
@@ -30,9 +34,6 @@ class SessionManager {
 
             this.isConnected = true;
             this.connectionListeners.forEach(listener => listener());
-
-            console.log('Connected to server');
-            console.log(`my id = ${this.socket.id}`);
         });
 
         this.socket.on('disconnect', () => {

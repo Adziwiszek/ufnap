@@ -1,4 +1,5 @@
 import {Player, bubbleTextPadding} from './../player.js';
+import {addTeleporter} from './../SceneTeleporter.js';
 import sessionManager from './../SessionManager.js';
 
 const maxTextRow = 20;
@@ -17,14 +18,22 @@ class WorldScene extends Phaser.Scene {
         })
     }
 
+    init(data) {
+        this.myID = data.myID;
+    }
+
     preload ()
     {
 
     }
 
     create () {
-        this.players = {};
-        this.myID = null; 
+        if(!this.players) {
+            this.players = {};
+        }
+        if(!this.myID) {
+            this.myID = null; 
+        }
         this.messages = {};
 
         this.worldWidth = 1024;
@@ -59,6 +68,22 @@ class WorldScene extends Phaser.Scene {
         } else if (this.cursors.down.isDown) {
             sessionManager.emit('move', 'down');
         }
+    }
+
+    addTeleporterToScene(x, y, newSceneName, playerid) {
+        const teleporter = addTeleporter(
+            this, 
+            () => { 
+                this.handleSwitchingToNewScene(newSceneName);
+            }, 
+            {x: x, y: y}
+        );
+        this.physics.add.collider(
+            teleporter.sprite,
+            this.players[playerid].sprite,
+            teleporter.callback
+        );
+        return teleporter; 
     }
 
     /**
@@ -294,8 +319,9 @@ class WorldScene extends Phaser.Scene {
         sessionManager.removeAllListeners('changeRoom');
 
         sessionManager.emit('changeRoom', { newRoom: sceneName });
+        sessionManager.resetIdPromise();
 
-        this.scene.start(sceneName); 
+        this.scene.start(sceneName, { myID: this.myID }); 
     }
 
 
