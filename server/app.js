@@ -46,6 +46,7 @@ app.post('/login', async (req, res) => {
     }
     
     const validPassword = await dbrepo.validatePassword(login, password);
+    console.log(validPassword);
     if (validPassword) {
       req.session.user = login;
       return res.redirect('/game');
@@ -88,7 +89,7 @@ app.post('/register', async (req, res) => {
       `);
     }
     
-    const hashedPassword = bcrypt.hashSync(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
     await dbrepo.createUser(login, hashedPassword);
     
     return res.send(`
