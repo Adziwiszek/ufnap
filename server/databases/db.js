@@ -39,10 +39,9 @@ class dbrepository {
   async createUser(username, pwd_hash, conn=null) {
     try{
       if(conn == null) conn = await this.getConnection();
-      if(this.userExists(username, conn)){
+      if(await this.userExists(username, conn)){
         return 1;
       }
-      conn = await this.getConnection();
       const query = 'INSERT INTO Users (username, password_hash, created_at) VALUES (?, ?, CURRENT_DATE())';
       const [result] = await conn.execute(query, [username, pwd_hash]);
       if(result.affectedRows === 1) console.log('Inserted user:', result);
