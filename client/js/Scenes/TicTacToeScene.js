@@ -31,25 +31,52 @@ class TicTacToeScene extends WorldScene {
             this.worldHeight
         );
 
+        sessionManager.on('gameEnd', (data) => {
+            const resultText = data.result;
+            const endGameButton = this.createRoundedButton(600, 400, () => { 
+                    endGameButton.destroy();
+                    this.player2.destroy();
+                    this.player1.destroy(); 
+                    this.currentPlayer.destroy();
+                    for(let i = 0; i < 9; i++) {
+                        this.gameCells[i].setSprite(this.createSprite('emptyCell'));
+                    }
+                    sessionManager.emit('quitGame', {});
+                }, 
+                resultText, 
+                { 
+                    fontSize: '32px', 
+                    fill: '#000000', 
+                    backgroundColor: '#FFFFFF', 
+                }
+            );
+        });
+
         sessionManager.on('gameStart', (data) => {
             console.log('game started!');
             console.log(data);
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 222a207 (tictactoe working)
+
+            // player symbols are messed up
             this.gameData = data;
-            this.add.text(20, 300, `1) ${data.symbol} - ${this.myID}`, {
+            this.player1 = this.add.text(20, 300,
+             `1) ${data.player2.symbol} - ${data.player1.name}`, 
+             {
+                fontSize: '24px', 
+                fill: '#000000', 
+                backgroundColor: '#DDDDDD',
+            });
+            this.player2 = this.add.text(20, 350, 
+            `2) ${data.player1.symbol} - ${data.player2.name}`,
+             {
                 fontSize: '24px', 
                 fill: '#000000', 
                 backgroundColor: '#FFFFFF',
             });
-            this.player2 = this.add.text(20, 350, `2) ${data.opponentSymbol} - ${data.opponentId}`, {
-                fontSize: '24px', 
-                fill: '#000000', 
-                backgroundColor: '#FFFFFF',
-            });
-            this.currentPlayer = this.add.text(200, 20, `current player: O`, {
+            this.currentPlayer = this.add.text(
+                400, 
+                20, 
+                data.player1.id == this.myID ? 'your turn!' : 'opponents turn!', 
+                {
                 fontSize: '24px',
                 fill: '#000000',
                 backgroundColor: '#FFFFFF',
@@ -62,8 +89,8 @@ class TicTacToeScene extends WorldScene {
         });
 
         sessionManager.on('leftQueue', (data) => {
-            console.log('left the queue!');
             if(this.inQueueText) {
+                console.log('left the queue!');
                 this.inQueueText.destroy();
                 delete this.inQueueText;
             }
@@ -80,20 +107,19 @@ class TicTacToeScene extends WorldScene {
 
         sessionManager.on('tictactoeresponse', (data) => {
             if(this.currentPlayer) {
-                this.currentPlayer.text = `current player: ${data.currentPlayer}`;
+                if(data.currentPlayerId == this.myID) {
+                    this.currentPlayer.text = 'your turn!';
+                } else {
+                    this.currentPlayer.text = 'opponents turn!';
+                }
             }
-=======
->>>>>>> d4635df (added joining to game queue)
         });
 
         this.lobbyteleport = this.addTeleporterToScene(0, 0, 
             'TestLobbyScene', this.myID);
 
         const joinGameButton = this.createRoundedButton(700, 200, () => { 
-<<<<<<< HEAD
-=======
                 console.log(`player ${this.myID} joined game`);
->>>>>>> d4635df (added joining to game queue)
                 sessionManager.emit('joinGameQueue', {});
             }, 
             "Join game!", 
@@ -106,6 +132,7 @@ class TicTacToeScene extends WorldScene {
 
         const leaveGameButton = this.createRoundedButton(700, 270, () => { 
                 sessionManager.emit('leaveGameQueue', {});
+                this.destroyGameUI();
             }, 
             "Leave game:(", 
             { 
@@ -140,6 +167,16 @@ class TicTacToeScene extends WorldScene {
     update() {
         // update from WorldScene handles player movement
         super.update();
+    }
+
+    destroyGameUI(){
+        if(this.player2) this.player2.destroy();
+        if(this.player1) this.player1.destroy(); 
+        if(this.currentPlayer) this.currentPlayer.destroy();
+        for(let i = 0; i < 9; i++) {
+            this.gameCells[i].setSprite(this.createSprite('emptyCell'));
+        }
+        sessionManager.emit('quitGame', {});
     }
 }
 
