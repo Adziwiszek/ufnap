@@ -367,6 +367,9 @@ class WorldScene extends Phaser.Scene {
         if (player && player.sprite) {
             player.sprite.destroy();
         }
+        if (player && player.nameText){
+            player.nameText.destroy();
+        }
         delete this.players[id];
     }
 

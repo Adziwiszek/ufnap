@@ -156,10 +156,18 @@ io.on('connection', (socket) => {
     socket.on('clientReady', async ({key: sceneName}) => {
         console.log(`player joining scene ${sceneName}`);
 
+        const session = socket.request.session;
+        if (session && session.user) {
+            console.log(`User from session: ${session.user.username}`);
+        } else {
+            console.log("No user found in session.");
+        }
+
         // Add player to the room
         socket.join(sceneName);
 
         if(!players[socket.id]) {
+
             players[socket.id] = { 
               x: 99, 
               y: 100, 
@@ -172,6 +180,7 @@ io.on('connection', (socket) => {
                 }
               }
             };
+
             console.log(session?.user?.username || "default_name", "!!!");
             console.log(`create player with id = ${socket.id}`);
         }
@@ -360,8 +369,15 @@ io.on('connection', (socket) => {
         player.currentRoom = newRoom;
         console.log(players);
 
+        const session = socket.request.session;
+        if (session && session.user) {
+            console.log(`User from session: ${session.user.username}`);
+        } else {
+            console.log("No user found in session.");
+        }
+
       // notify other players in this room
-        socket.broadcast.to(newRoom).emit('newPlayer', { id: socket.id, x: player.x, y: player.y });
+        socket.broadcast.to(newRoom).emit('newPlayer', { id: socket.id, x: player.x, y: player.y, name: session?.user?.username || "default_name"});
     });
 });
 
