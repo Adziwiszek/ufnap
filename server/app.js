@@ -17,14 +17,20 @@ app.use(express.static(path.join(__dirname, '../client/js')));
 
 // Logowanie
 
-app.use(express.urlencoded({ extended: true })); 
+app.use(express.urlencoded({ extended: true }));
 
-app.use(session({
+const sessionMiddleware = session({
   secret: 'klucz',
   resave: false,
   saveUninitialized: true,
   cookie: { secure: false }
-}));
+});
+
+app.use(sessionMiddleware);
+
+io.use((socket, next) => {
+  sessionMiddleware(socket.request, {}, next);
+});
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/html/index.html'));  
@@ -48,7 +54,7 @@ app.post('/login', async (req, res) => {
     const validPassword = await dbrepo.validatePassword(login, password);
     console.log(validPassword);
     if (validPassword) {
-      req.session.user = login;
+      req.session.user = {username : login};
       return res.redirect('/game');
     } else {
       return res.send(`
@@ -108,6 +114,11 @@ app.get('/game', (req, res) => {
   res.redirect('game.html');
 });
 
+app.get('/session', (req, res) => {
+  res.json(req.session.user);
+});
+
+
 let players = {};
 let worldSettings = {};
 let tictoctest = {};
@@ -122,15 +133,23 @@ function adjustWorldSize(width, height) {
 // Handle socket connections
 io.on('connection', (socket) => {
     console.log(`Player connected: ${socket.id}`);
+
+    const session = socket.request.session;
+    if (session && session.user) {
+        console.log(`User from session: ${session.user.username}`);
+    } else {
+        console.log("No user found in session.");
+    }
     
-    socket.on('clientReady', ({key: sceneName}) => {
+    socket.on('clientReady', async ({key: sceneName}) => {
         console.log(`player joining scene ${sceneName}`);
 
         // Add player to the room
         socket.join(sceneName);
 
         if(!players[socket.id]) {
-            players[socket.id] = { x: 99, y: 100, currentRoom: sceneName};
+            players[socket.id] = { x: 99, y: 100, currentRoom: sceneName, name : session?.user?.username || "default_name"};
+            console.log(session?.user?.username || "default_name", "!!!");
             console.log(`create player with id = ${socket.id}`);
         }
 
@@ -149,10 +168,11 @@ io.on('connection', (socket) => {
           id: socket.id,
           x: players[socket.id].x,
           y: players[socket.id].y,
+          name: players[socket.id].name,
           worldWidth: worldSettings[sceneName].width,
           worldHeight: worldSettings[sceneName].height,
         })
-        socket.broadcast.to(sceneName).emit('newPlayer', { id: socket.id, x: 100, y: 100 });
+        socket.broadcast.to(sceneName).emit('newPlayer', { id: socket.id, x: 100, y: 100 , name:session?.user?.username || "default_name"});
     });
 
     socket.on('tictactoemove', (data) => {
@@ -211,7 +231,8 @@ io.on('connection', (socket) => {
         }
         io.in(player.currentRoom).emit('chatMessage', {
             id: socket.id, 
-            data: data
+            data: data,
+            session: socket.request.session
         }); 
     })
     // Handle player changing rooms

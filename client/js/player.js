@@ -7,6 +7,7 @@ class Player {
         this.x = x;
         this.y = y;
         this.name = name || "default_name";
+        console.log(this.name, "nazywam sie tak!");
     }
 
     /**
