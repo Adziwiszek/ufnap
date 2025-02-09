@@ -232,24 +232,38 @@ io.on('connection', (socket) => {
           // player2 always starts!
           io.to(player1Id).emit('gameStart', { 
               gameId: gameId,
-              symbol: 'X',
-              opponentSymbol: 'O',
+              symbol: 'O',
+              opponentSymbol: 'X',
               opponentId: player2Id,
-              player1Id: player1Id,
-              player2Id: player2Id,
+              player1: {
+                id: player1Id,
+                symbol: 'O',
+                name: players[player1Id].name
+              },
+              player2: {
+                id: player2Id,
+                symbol: 'X',
+                name: players[player2Id].name
+              },
           });
           io.to(player2Id).emit('gameStart', {
               gameId: gameId, 
-              symbol: 'O',
-              opponentSymbol: 'X',
+              symbol: 'X',
+              opponentSymbol: 'O',
               opponentId: player1Id,
-              player1Id: player1Id,
-              player2Id: player2Id,
+              player1: {
+                id: player1Id,
+                symbol: 'O',
+                name: players[player1Id].name
+              },
+              player2: {
+                id: player2Id,
+                symbol: 'X',
+                name: players[player2Id].name
+              },
           });
           games[gameName].instances[gameId].game = new tictactoe();
-          // player 1 is always X
           games[gameName].instances[gameId].player1 = player1Id
-          // player 2 is always O
           games[gameName].instances[gameId].player2 = player2Id
 
           
@@ -300,7 +314,28 @@ io.on('connection', (socket) => {
       });
       data.currentPlayer = game.playersMark();
       data.currentPlayerId = playerNumber === 1 ? player2Id : player1Id;
-      
+      if(result === 3) {
+          io.to(player1Id).emit('gameEnd', { 
+              result: `${players[player1Id].name} won!`,
+          });
+          io.to(player2Id).emit('gameEnd', { 
+              result: `${players[player1Id].name} won!`,
+          });
+      } else if(result === 4) {
+          io.to(player1Id).emit('gameEnd', { 
+              result: `${players[player2Id].name} won!`,
+          });
+          io.to(player2Id).emit('gameEnd', { 
+              result: `${players[player2Id].name} won!`,
+          });
+      } else if(result === 5) {
+          io.to(player1Id).emit('gameEnd', { 
+              result: `Draw!`,
+          });
+          io.to(player2Id).emit('gameEnd', { 
+              result: `Draw!`,
+          });
+      } 
       io.to('TicTacToeScene').emit('tictactoeresponse', data);
     });
   

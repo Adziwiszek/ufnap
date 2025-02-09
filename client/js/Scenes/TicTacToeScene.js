@@ -31,18 +31,37 @@ class TicTacToeScene extends WorldScene {
             this.worldHeight
         );
 
+        sessionManager.on('gameEnd', (data) => {
+            const resultText = data.result;
+            const endGameButton = this.createRoundedButton(600, 400, () => { 
+                    endGameButton.destroy();
+                    //sessionManager.emit('joinGameQueue', {});
+                }, 
+                resultText, 
+                { 
+                    fontSize: '32px', 
+                    fill: '#000000', 
+                    backgroundColor: '#FFFFFF', 
+                }
+            );
+        });
 
         sessionManager.on('gameStart', (data) => {
             console.log('game started!');
             console.log(data);
 
+            // player symbols are messed up
             this.gameData = data;
-            this.add.text(20, 300, `1) ${data.symbol} - ${this.players[data.player2Id].name}`, {
+            this.add.text(20, 300,
+             `1) ${data.player2.symbol} - ${data.player1.name}`, 
+             {
                 fontSize: '24px', 
                 fill: '#000000', 
                 backgroundColor: '#DDDDDD',
             });
-            this.player2 = this.add.text(20, 350, `2) ${data.opponentSymbol} - ${this.players[data.player1Id].name}`, {
+            this.player2 = this.add.text(20, 350, 
+            `2) ${data.player1.symbol} - ${data.player2.name}`,
+             {
                 fontSize: '24px', 
                 fill: '#000000', 
                 backgroundColor: '#FFFFFF',
@@ -50,7 +69,7 @@ class TicTacToeScene extends WorldScene {
             this.currentPlayer = this.add.text(
                 400, 
                 20, 
-                data.player1Id == this.myID ? 'your turn!' : 'opponents turn!', 
+                data.player1.id == this.myID ? 'your turn!' : 'opponents turn!', 
                 {
                 fontSize: '24px',
                 fill: '#000000',
