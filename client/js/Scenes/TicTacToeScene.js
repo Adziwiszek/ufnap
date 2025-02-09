@@ -34,6 +34,7 @@ class TicTacToeScene extends WorldScene {
         sessionManager.on('gameStart', (data) => {
             console.log('game started!');
             console.log(data);
+<<<<<<< HEAD
             this.gameData = data;
             this.add.text(20, 300, `1) ${data.symbol} - ${this.myID}`, {
                 fontSize: '24px', 
@@ -78,12 +79,18 @@ class TicTacToeScene extends WorldScene {
             if(this.currentPlayer) {
                 this.currentPlayer.text = `current player: ${data.currentPlayer}`;
             }
+=======
+>>>>>>> d4635df (added joining to game queue)
         });
 
         this.lobbyteleport = this.addTeleporterToScene(0, 0, 
             'TestLobbyScene', this.myID);
 
         const joinGameButton = this.createRoundedButton(700, 200, () => { 
+<<<<<<< HEAD
+=======
+                console.log(`player ${this.myID} joined game`);
+>>>>>>> d4635df (added joining to game queue)
                 sessionManager.emit('joinGameQueue', {});
             }, 
             "Join game!", 
