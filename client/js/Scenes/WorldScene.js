@@ -159,6 +159,17 @@ class WorldScene extends Phaser.Scene {
         return newPlayer;
     }
 
+    createNameText(x, y, name){
+        return this.add.text(x, y + 30, "", {
+            fontSize: "12px",
+            color: '#000000',
+            strokeThickness: 0.2,
+            stroke: '#000000',
+            backgroundColor: "rgba(0, 0, 0, 0)",
+            padding: { left: 5, right: 5, top: 2, bottom: 2 },
+        }).setOrigin(0.5);
+    }
+
     /**
      * Adds new player to the scene
      * 
@@ -166,14 +177,15 @@ class WorldScene extends Phaser.Scene {
      * @param {number} y 
      * @param {number} id 
      */
-    addNewPlayer(x, y, id) {
-        let p = new Player(x, y, this);
+    addNewPlayer(x, y, id, name=null) {
+        let p = new Player(x, y, this, name);
         let tint = id === this.myID ? 0x4287f5 : 0xff9c66;
         p.setSprite(this.createPlayerSprite(
             tint,
             x,
             y
         ));
+        p.setNameText(this.createNameText(x, y));
         this.players[id] = p;
         this.players[id].sprite.setDepth(1000);
     }
