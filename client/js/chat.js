@@ -15,9 +15,10 @@ window.addEventListener('load', () => {
     };
 
 
-    sessionManager.on('chatMessage', (message, player_name=null) => {
+    sessionManager.on('chatMessage', async (message) => {
         // console.log(`client received: ${message.data}`);
-        player_name = player_name || "default_name";
+        
+        let player_name = message.session?.user?.username || "default_name";
         if (message && message.data) {
             let msg = document.getElementById('messages');
             msg.innerHTML += player_name + ": " + message.data + "<br/>";
