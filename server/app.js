@@ -163,11 +163,13 @@ io.on('connection', (socket) => {
           io.to(player1Id).emit('gameStart', { 
               gameId: gameId,
               symbol: 'X',
+              opponentSymbol: 'O',
               opponentId: player2Id
           });
           io.to(player2Id).emit('gameStart', {
               gameId: gameId, 
               symbol: 'O',
+              opponentSymbol: 'X',
               opponentId: player1Id
           });
 

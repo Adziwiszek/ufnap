@@ -34,24 +34,33 @@ class TicTacToeScene extends WorldScene {
         sessionManager.on('gameStart', (data) => {
             console.log('game started!');
             console.log(data);
-            if(this.x) {
-                this.x.destroy();
-                delete this.x;
+            this.add.text(20, 300, `1) ${data.symbol} - ${this.myID}`, {
+                fontSize: '24px', 
+                fill: '#000000', 
+                backgroundColor: '#FFFFFF',
+            });
+            this.player2 = this.add.text(20, 350, `2) ${data.opponentSymbol} - ${data.opponentId}`, {
+                fontSize: '24px', 
+                fill: '#000000', 
+                backgroundColor: '#FFFFFF',
+            });
+            if(this.inQueueText) {
+                this.inQueueText.destroy();
+                delete this.inQueueText;
             }
         });
 
         sessionManager.on('leftQueue', (data) => {
             console.log('left the queue!');
-            if(this.x) {
-                this.x.destroy();
-                delete this.x;
+            if(this.inQueueText) {
+                this.inQueueText.destroy();
+                delete this.inQueueText;
             }
         });
 
-
         sessionManager.on('addedToTheQueue', (data) => {
             console.log('added to the queue!');
-            this.x = this.add.text(400, 20, 'Waiting for opponent...', {
+            this.inQueueText = this.add.text(400, 20, 'Waiting for opponent...', {
                 fontSize: '24px', 
                 fill: '#000000', 
                 backgroundColor: '#FFFFFF',
