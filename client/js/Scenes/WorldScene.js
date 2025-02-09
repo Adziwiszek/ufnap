@@ -159,7 +159,7 @@ class WorldScene extends Phaser.Scene {
         return newPlayer;
     }
 
-    createNameText(x, y, name){
+    createNameText(x, y){
         return this.add.text(x, y + 30, "", {
             fontSize: "12px",
             color: '#000000',
@@ -178,6 +178,7 @@ class WorldScene extends Phaser.Scene {
      * @param {number} id 
      */
     addNewPlayer(x, y, id, name=null) {
+        console.log(name, "imie!!!!!!");
         let p = new Player(x, y, this, name);
         let tint = id === this.myID ? 0x4287f5 : 0xff9c66;
         p.setSprite(this.createPlayerSprite(
@@ -309,7 +310,7 @@ class WorldScene extends Phaser.Scene {
 
     initPlayer(message) {
         this.myID = message.id;
-        this.addNewPlayer(message.x, message.y, message.id);
+        this.addNewPlayer(message.x, message.y, message.id, message.name);
         this.focusCamera(message.id);
         this.updateWorldSize(message.worldHeight, message.worldWidth); 
     }
@@ -326,7 +327,7 @@ class WorldScene extends Phaser.Scene {
                 this.createChatBubble(
                     sender.x,
                     sender.y,
-                    message.data
+                    message.data,
                 );
             chatBubble.id = this.msgCounter++;
             sender.showChatBubble(chatBubble);
@@ -339,7 +340,8 @@ class WorldScene extends Phaser.Scene {
             this.addNewPlayer(
                 players[id].x,
                 players[id].y,
-                id
+                id,
+                players[id].name
             );
         }
     }
@@ -350,7 +352,8 @@ class WorldScene extends Phaser.Scene {
         }
         console.log('new player joined!');
         console.log(`player id = ${message.id}`);
-        this.addNewPlayer(message.x, message.y, message.id);
+        console.log(message);
+        this.addNewPlayer(message.x, message.y, message.id, message.name);
     }
 
     handlePlayerDisconnected(message) {
