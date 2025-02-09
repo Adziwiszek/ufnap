@@ -35,6 +35,9 @@ class TicTacToeScene extends WorldScene {
             console.log('game started!');
             console.log(data);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 222a207 (tictactoe working)
             this.gameData = data;
             this.add.text(20, 300, `1) ${data.symbol} - ${this.myID}`, {
                 fontSize: '24px', 
