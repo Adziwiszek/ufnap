@@ -374,7 +374,83 @@ class WorldScene extends Phaser.Scene {
         this.scene.start(sceneName, { myID: this.myID }); 
     }
 
+    createRoundedButton(x, y, callback, text, textOptions = {}) {
+        // Create container to hold all button elements
+        const container = this.add.container(x, y);
+        container.setDepth(3000).setScrollFactor(0);
 
+        // Default text options
+        const defaultTextOptions = {
+            color: '#000000',
+            fontSize: '16px',
+            backgroundColor: '#00FF00',  // Default background color
+            ...textOptions
+        };
+        const backgroundColor = defaultTextOptions.backgroundColor;
+        delete defaultTextOptions.backgroundColor; 
+
+        // Create text
+        const buttonText = this.add.text(0, 0, text, defaultTextOptions);
+        buttonText.setOrigin(0.5);  // Center the text
+
+        // Calculate button dimensions with padding
+        const padding = 20;
+        const width = buttonText.width + padding * 2;
+        const height = buttonText.height + padding * 2;
+
+        // Create shadow
+        const shadow = this.add.graphics();
+        shadow.fillStyle(0x000000, 0.3);  // Semi-transparent black
+        shadow.fillRoundedRect(-width/2 + 4, -height/2 + 4, width, height, 10);
+        if (shadow.postFX) {
+            shadow.postFX.addBlur(0, 4, 4, 1, 0x000000, 0);
+        }
+
+        // Create button background using the provided backgroundColor
+        const background = this.add.graphics();
+        const baseColor = parseInt(backgroundColor.replace('#', ''), 16);
+        background.fillStyle(baseColor, 1);
+        background.fillRoundedRect(-width/2, -height/2, width, height, 10);
+
+        // Create hit area for better interaction
+        const hitArea = new Phaser.Geom.Rectangle(-width/2, -height/2, width, height);
+        
+        // Add elements to container in correct order
+        container.add([shadow, background, buttonText]);
+
+        // Function to darken a hex color
+        const darkenColor = (color, percent) => {
+            const r = ((color >> 16) & 0xFF) * (1 - percent);
+            const g = ((color >> 8) & 0xFF) * (1 - percent);
+            const b = (color & 0xFF) * (1 - percent);
+            return (r << 16) | (g << 8) | b;
+        };
+
+        const changeBackgroundColor = (color) => {
+            background.clear();
+            background.fillStyle(color, 1);  // Slightly darker
+            background.fillRoundedRect(-width/2, -height/2, width, height, 10);
+        };
+        const hoverColor = darkenColor(baseColor, 0.1);
+        const clickColor = darkenColor(baseColor, 0.2);
+        // Make container interactive with color variations based on the provided backgroundColor
+        container.setInteractive(hitArea, Phaser.Geom.Rectangle.Contains)
+            .on('pointerover', () => {
+                changeBackgroundColor(hoverColor);
+            })
+            .on('pointerout', () => {
+                changeBackgroundColor(baseColor);
+            })
+            .on('pointerdown', () => {
+                changeBackgroundColor(clickColor);
+                if (callback) callback();
+            })
+            .on('pointerup', () => {
+                changeBackgroundColor(hoverColor);
+            });
+
+        return container;
+    }    
 }
 
 export default WorldScene;

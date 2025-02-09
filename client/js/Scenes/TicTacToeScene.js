@@ -13,7 +13,7 @@ class TicTacToeScene extends WorldScene {
 
     create() {
         super.create();
-
+        this.activePlayersID = [];
         this.gameCells = {};
 
         // this.initSocketEvents();
@@ -33,6 +33,28 @@ class TicTacToeScene extends WorldScene {
 
         this.lobbyteleport = this.addTeleporterToScene(0, 0, 
             'TestLobbyScene', this.myID);
+
+        const joinGameButton = this.createRoundedButton(700, 200, () => { 
+                console.log(`player ${this.myID} joined game`);
+            }, 
+            "Join game!", 
+            { 
+                fontSize: '24px', 
+                fill: '#000000', 
+                backgroundColor: '#00FF00', 
+            }
+        );
+
+        const leaveGameButton = this.createRoundedButton(700, 270, () => { 
+                console.log(`player ${this.myID} joined game`);
+            }, 
+            "Leave game:(", 
+            { 
+                fontSize: '24px', 
+                fill: '#000000', 
+                backgroundColor: '#FF0000', 
+            }
+        );
 
         for(let i = 0; i < 9; i++) {
             const x = 300 + (i % 3) * 32;
