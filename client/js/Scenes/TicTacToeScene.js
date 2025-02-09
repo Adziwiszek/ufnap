@@ -34,6 +34,7 @@ class TicTacToeScene extends WorldScene {
         sessionManager.on('gameStart', (data) => {
             console.log('game started!');
             console.log(data);
+            this.gameData = data;
             this.add.text(20, 300, `1) ${data.symbol} - ${this.myID}`, {
                 fontSize: '24px', 
                 fill: '#000000', 
@@ -103,7 +104,7 @@ class TicTacToeScene extends WorldScene {
         const cell = new InteractiveObject()
             .setSprite(this.createSprite('emptyCell'))
             .setPosition(x, y)
-            .setCallback(() => { 
+            .setCallback(() => {
                 sessionManager.emit('tictactoemove', {cellid: id});
              })
             .makeInteractive();

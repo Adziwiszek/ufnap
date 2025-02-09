@@ -9,6 +9,8 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 
+const tictactoe = require('./games/tictactoe.js');
+
 app.use(express.static(path.join(__dirname, '../client')));
 app.use(express.static(path.join(__dirname, '../client/html')));
 app.use(express.static(path.join(__dirname, '../client/js')));
@@ -102,6 +104,15 @@ function adjustWorldSize(width, height) {
     }
 }
 
+function flattenBoard(board) {
+    const res = [];
+    for (let i = 0; i < board.length; i++) {
+        for (let j = 0; j < board[i].length; j++) {
+            res.push(board[i][j]);
+        }
+    }
+    return res;
+}
 // Handle socket connections
 io.on('connection', (socket) => {
     console.log(`Player connected: ${socket.id}`);
@@ -113,7 +124,17 @@ io.on('connection', (socket) => {
         socket.join(sceneName);
 
         if(!players[socket.id]) {
-            players[socket.id] = { x: 99, y: 100, currentRoom: sceneName, subroom: null };
+            players[socket.id] = { 
+              x: 99, 
+              y: 100, 
+              currentRoom: sceneName, 
+              subroom: null,
+              games: {
+                'TicTacToeScene': {
+                  gameId: null
+                }
+              }
+            };
             console.log(`create player with id = ${socket.id}`);
         }
 
@@ -172,6 +193,15 @@ io.on('connection', (socket) => {
               opponentSymbol: 'X',
               opponentId: player1Id
           });
+          games[gameName].instances[gameId].game = new tictactoe();
+          // player 1 is always X
+          games[gameName].instances[gameId].player1 = player1Id
+          // player 2 is always O
+          games[gameName].instances[gameId].player2 = player2Id
+
+          
+          players[player1Id].games[gameName].gameId = gameId;
+          players[player2Id].games[gameName].gameId = gameId;
 
           console.log(`Game started between ${player1Id} and ${player2Id}`);
         }
@@ -193,20 +223,29 @@ io.on('connection', (socket) => {
     });
 
     socket.on('tictactoemove', (data) => {
-      // mock response, change to actual game logic
-      if(!tictoctest[data.cellid]) {
-        tictoctest[data.cellid] = 0;
-      } else {
-        tictoctest[data.cellid] = (tictoctest[data.cellid] + 1) % 3;
+      const gameid = players[socket.id].games['TicTacToeScene'].gameId;
+      const player1Id = games['TicTacToeScene'].instances[gameid].player1;
+      const player2Id = games['TicTacToeScene'].instances[gameid].player2;
+      const game = games['TicTacToeScene'].instances[gameid].game;
+      let playerNumber = 1;
+      if(socket.id === player2Id) {
+        playerNumber = 2;
       }
-      for(let i = 0; i < 9; i++) {
-        if(i === data.cellid) {
-          data[i] = 'emptyCell';
+      const cellid = data.cellid;
+      const pos = [Math.floor(cellid / 3), cellid % 3];
+      let result = game.attemptMove(pos, playerNumber);
+      data.result = result;
+      const board = flattenBoard(game.getBoard()); 
+      board.forEach((field, index) => {jj
+        if(field === '.') {
+          data[index] = 'emptyCell';
+        } else if(field === 'O') {
+          data[index] = 'OCell';
+        } else if(field === 'X') {
+          data[index] = 'XCell';
         }
-        else {
-          data[i] = 'XCell';
-        }
-      }
+      });
+      
       io.to('TicTacToeScene').emit('tictactoeresponse', data);
     });
   
