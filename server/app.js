@@ -19,9 +19,6 @@ app.use(express.static(path.join(__dirname, '../client/js')));
 
 app.use(express.urlencoded({ extended: true })); 
 
-const cookieParser = require("cookie-parser");
-app.use(cookieParser());
-
 const sessionMiddleware = session({
   secret: 'klucz',
   resave: false,
@@ -31,7 +28,6 @@ const sessionMiddleware = session({
 
 app.use(sessionMiddleware);
 io.use((socket, next) => sessionMiddleware(socket.request, {}, next)); 
-
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/html/index.html'));  
@@ -131,15 +127,11 @@ const adjustedWorldHeight = Math.ceil(worldHeight / 32) * 32;
 
 // tylko dla zalogowanych
 io.use((socket, next) => {
-
-  console.log(session.user);
   
   if (!session.user) {
-    console.log(`⚠️ Odmowa dostępu dla socket ${socket.id} - brak sesji!`);
-    return next(new Error("Brak dostępu - zaloguj się."));
+    console.log(`Brak dostępu dla socketa - brak sesji`);
   }
 
-  console.log(`✅ Socket ${socket.id} - użytkownik: ${session.user}`);
   next();
 });
 
