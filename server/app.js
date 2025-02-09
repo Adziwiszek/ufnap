@@ -4,6 +4,8 @@ const socketIO = require('socket.io');
 const http = require('http');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
+const dbrepo = require('./databases/db.js');
+
 
 const app = express();
 const server = http.createServer(app);
@@ -29,43 +31,44 @@ app.get('/', (req, res) => {
 });
 
 // Obsługa logowania
-app.post('/login', (req, res) => {
-
-  const users = [
-    { login: "ola", password: bcrypt.hashSync("123", 10) }
-  ];
-
+app.post('/login', async (req, res) => {
   const { login, password } = req.body;
-
-  const user = users.find(u => u.login === login);
-  if (user && bcrypt.compareSync(password, user.password)) {
+  
+  try {
+    const userExists = await dbrepo.userExists(login);
+    if (!userExists) {
+      return res.send(`
+        <script>
+          alert('Błędny login lub hasło!');
+          window.location.href = "/";
+        </script>
+      `);
+    }
+    
+    const validPassword = await dbrepo.validatePassword(login, password);
+    console.log(validPassword);
+    if (validPassword) {
       req.session.user = login;
       return res.redirect('/game');
-  } else {
-    return res.send(`
-      <script>
-        alert('Błędny login lub hasło!');
-        window.location.href = "/";
-      </script>
-    `);
+    } else {
+      return res.send(`
+        <script>
+          alert('Błędny login lub hasło!');
+          window.location.href = "/";
+        </script>
+      `);
+    }
+  } catch (err) {
+    console.error("Login error:", err);
+    return res.status(500).send("Internal Server Error");
   }
 });
 
 //Obsługa rejestracji
-app.post('/register', (req, res) => {
-  const { login, password, password2} = req.body;
 
-  // TODO: check if user with that nick already exists
-
-  // if (false) { 
-  //   return res.send(`
-  //     <script>
-  //       alert('Użytkownik o tym loginie już istnieje!');
-  //       window.location.href = "/";
-  //     </script>
-  //   `);
-  // }
-
+app.post('/register', async (req, res) => {
+  const { login, password, password2 } = req.body;
+  
   if (password !== password2) {
     return res.send(`
       <script>
@@ -74,17 +77,32 @@ app.post('/register', (req, res) => {
       </script>
     `);
   }
-
-  const hashedPassword = bcrypt.hashSync(password, 10);
-
-  return res.send(`
-    <script>
-      alert('`+login+hashedPassword+`');
-      window.location.href = "/";
-    </script>
-  `);
+  
+  try {
+    const userExists = await dbrepo.userExists(login);
+    if (userExists) {
+      return res.send(`
+        <script>
+          alert('Użytkownik o tym loginie już istnieje!');
+          window.location.href = "/";
+        </script>
+      `);
+    }
+    
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await dbrepo.createUser(login, hashedPassword);
+    
+    return res.send(`
+      <script>
+        alert('Rejestracja udana! Możesz się teraz zalogować.');
+        window.location.href = "/";
+      </script>
+    `);
+  } catch (err) {
+    console.error("Registration error:", err);
+    return res.status(500).send("Internal Server Error");
+  }
 });
-
 
 app.get('/game', (req, res) => {
   res.redirect('game.html');
