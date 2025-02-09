@@ -132,6 +132,7 @@ class TicTacToeScene extends WorldScene {
 
         const leaveGameButton = this.createRoundedButton(700, 270, () => { 
                 sessionManager.emit('leaveGameQueue', {});
+                this.destroyGameUI();
             }, 
             "Leave game:(", 
             { 
@@ -166,6 +167,16 @@ class TicTacToeScene extends WorldScene {
     update() {
         // update from WorldScene handles player movement
         super.update();
+    }
+
+    destroyGameUI(){
+        if(this.player2) this.player2.destroy();
+        if(this.player1) this.player1.destroy(); 
+        if(this.currentPlayer) this.currentPlayer.destroy();
+        for(let i = 0; i < 9; i++) {
+            this.gameCells[i].setSprite(this.createSprite('emptyCell'));
+        }
+        sessionManager.emit('quitGame', {});
     }
 }
 
