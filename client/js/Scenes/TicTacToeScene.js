@@ -34,6 +34,28 @@ class TicTacToeScene extends WorldScene {
         sessionManager.on('gameStart', (data) => {
             console.log('game started!');
             console.log(data);
+            if(this.x) {
+                this.x.destroy();
+                delete this.x;
+            }
+        });
+
+        sessionManager.on('leftQueue', (data) => {
+            console.log('left the queue!');
+            if(this.x) {
+                this.x.destroy();
+                delete this.x;
+            }
+        });
+
+
+        sessionManager.on('addedToTheQueue', (data) => {
+            console.log('added to the queue!');
+            this.x = this.add.text(400, 20, 'Waiting for opponent...', {
+                fontSize: '24px', 
+                fill: '#000000', 
+                backgroundColor: '#FFFFFF',
+            });
         });
 
         this.lobbyteleport = this.addTeleporterToScene(0, 0, 

@@ -148,8 +148,9 @@ io.on('connection', (socket) => {
           !games[gameName].queue.includes(socket.id)
         ) {
           games[gameName].queue.push(socket.id);
+          io.to(socket.id).emit('addedToTheQueue', {});
           console.log('added player to the queue')
-        } else {
+        } else if(!games[gameName].queue.includes(socket.id)) {
           const player1Id = games[gameName].queue.pop();
           const player2Id = socket.id;
           // Create new game instance
@@ -178,13 +179,13 @@ io.on('connection', (socket) => {
     socket.on('leaveGameQueue', (data) => {
       const player = players[socket.id];
       const gameName = player.currentRoom;
-      // handle game cases (maybe move out to other functions)
       if(gameName === 'TicTacToeScene') {
         if(games[gameName].queue.length > 0 &&
           games[gameName].queue[0] === socket.id
         ) {
           const a = games[gameName].queue.pop();
           console.log('player left the queue');
+          io.to(socket.id).emit('leftQueue', {});
         }
       }
     });
@@ -232,6 +233,14 @@ io.on('connection', (socket) => {
         console.log(players[socket.id], '\n');
         if(players[socket.id]) {
             const playerRoom = players[socket.id].currentRoom;
+            for(let gameName in games) {
+              // Remove player from queue if they're in it
+              const queueIndex = games[gameName].queue.indexOf(socket.id);
+              if (queueIndex !== -1) {
+                  games[gameName].queue.splice(queueIndex, 1);
+                  console.log(`Removed disconnected player ${socket.id} from ${gameName} queue`);
+              }
+            }
             io.in(playerRoom).emit('playerDisconnected', { id: socket.id });
         }
         delete players[socket.id];
