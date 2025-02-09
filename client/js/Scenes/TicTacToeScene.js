@@ -40,7 +40,6 @@ class TicTacToeScene extends WorldScene {
             'TestLobbyScene', this.myID);
 
         const joinGameButton = this.createRoundedButton(700, 200, () => { 
-                console.log(`player ${this.myID} joined game`);
                 sessionManager.emit('joinGameQueue', {});
             }, 
             "Join game!", 
@@ -52,7 +51,7 @@ class TicTacToeScene extends WorldScene {
         );
 
         const leaveGameButton = this.createRoundedButton(700, 270, () => { 
-                console.log(`player ${this.myID} joined game`);
+                sessionManager.emit('leaveGameQueue', {});
             }, 
             "Leave game:(", 
             { 

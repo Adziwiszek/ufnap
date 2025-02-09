@@ -175,6 +175,20 @@ io.on('connection', (socket) => {
       }
     });
 
+    socket.on('leaveGameQueue', (data) => {
+      const player = players[socket.id];
+      const gameName = player.currentRoom;
+      // handle game cases (maybe move out to other functions)
+      if(gameName === 'TicTacToeScene') {
+        if(games[gameName].queue.length > 0 &&
+          games[gameName].queue[0] === socket.id
+        ) {
+          const a = games[gameName].queue.pop();
+          console.log('player left the queue');
+        }
+      }
+    });
+
     socket.on('tictactoemove', (data) => {
       // mock response, change to actual game logic
       if(!tictoctest[data.cellid]) {
