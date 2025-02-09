@@ -7,7 +7,6 @@ class Player {
         this.x = x;
         this.y = y;
         this.name = name || "default_name";
-        console.log(this.name, "nazywam sie tak!");
     }
 
     /**
@@ -17,11 +16,13 @@ class Player {
      * @param {number} y - y coordinate
      */
     setPosition(x, y) {
-        this.x = x;
-        this.y = y;
         if (this.sprite) {
             this.sprite.setPosition(x, y);
         }
+        var bounds = this.sprite.getBounds();
+        x = this.x = bounds.x + bounds.width/2;
+        y = this.y = bounds.y + bounds.height/2;
+        console.log(x, y, this.x, this.y, bounds);
         if (this.nameText) {
             this.nameText.setPosition(x, y + 30); // Update name position
         }

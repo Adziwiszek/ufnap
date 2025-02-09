@@ -301,10 +301,10 @@ io.on('connection', (socket) => {
         // checking if player went out of bounds
         const worldWidth = worldSettings[player.currentRoom].width;
         const worldHeight = worldSettings[player.currentRoom].height;
-        player.x = Math.max(player.x, 0);
-        player.x = Math.min(player.x, worldWidth);
-        player.y = Math.max(player.y, 0);
-        player.y = Math.min(player.y, worldHeight);
+        player.x = Math.max(player.x, 25.6);
+        player.x = Math.min(player.x, worldWidth-25.6);
+        player.y = Math.max(player.y, 25.6);
+        player.y = Math.min(player.y, worldHeight-25.6);
         io.in(player.currentRoom).emit('playerMoved', { id: socket.id, x: player.x, y: player.y });
     });
 
