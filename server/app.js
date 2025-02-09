@@ -133,16 +133,16 @@ function adjustWorldSize(width, height) {
 // Handle socket connections
 io.on('connection', (socket) => {
     console.log(`Player connected: ${socket.id}`);
-
-    const session = socket.request.session;
-    if (session && session.user) {
-        console.log(`User from session: ${session.user.username}`);
-    } else {
-        console.log("No user found in session.");
-    }
     
-    socket.on('clientReady', async ({key: sceneName}) => {
+    socket.on('clientReady', ({key: sceneName}) => {
         console.log(`player joining scene ${sceneName}`);
+
+        const session = socket.request.session;
+        if (session && session.user) {
+            console.log(`User from session: ${session.user.username}`);
+        } else {
+            console.log("No user found in session.");
+        }
 
         // Add player to the room
         socket.join(sceneName);
@@ -255,8 +255,15 @@ io.on('connection', (socket) => {
         player.currentRoom = newRoom;
         console.log(players);
 
+        const session = socket.request.session;
+        if (session && session.user) {
+            console.log(`User from session: ${session.user.username}`);
+        } else {
+            console.log("No user found in session.");
+        }
+
       // notify other players in this room
-        socket.broadcast.to(newRoom).emit('newPlayer', { id: socket.id, x: player.x, y: player.y });
+        socket.broadcast.to(newRoom).emit('newPlayer', { id: socket.id, x: player.x, y: player.y, name: session?.user?.username || "default_name"});
     });
 });
 
