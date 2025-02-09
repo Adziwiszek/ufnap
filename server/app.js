@@ -19,12 +19,19 @@ app.use(express.static(path.join(__dirname, '../client/js')));
 
 app.use(express.urlencoded({ extended: true })); 
 
-app.use(session({
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
+
+const sessionMiddleware = session({
   secret: 'klucz',
   resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false }
-}));
+  saveUninitialized: false, 
+  cookie: { secure: false } 
+});
+
+app.use(sessionMiddleware);
+io.use((socket, next) => sessionMiddleware(socket.request, {}, next)); 
+
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/html/index.html'));  
@@ -48,7 +55,7 @@ app.post('/login', async (req, res) => {
     const validPassword = await dbrepo.validatePassword(login, password);
     console.log(validPassword);
     if (validPassword) {
-      req.session.user = {login};
+      session.user = login;
       return res.redirect('/game');
     } else {
       return res.send(`
@@ -105,6 +112,8 @@ app.post('/register', async (req, res) => {
 });
 
 app.get('/game', (req, res) => {
+
+
   res.redirect('game.html');
 });
 
@@ -119,6 +128,21 @@ const worldHeight = 1000;
 // adjusts world size to be multiple of tile size (32)
 const adjustedWorldWidth = Math.ceil(worldWidth / 32) * 32;
 const adjustedWorldHeight = Math.ceil(worldHeight / 32) * 32;
+
+// tylko dla zalogowanych
+io.use((socket, next) => {
+
+  console.log(session.user);
+  
+  if (!session.user) {
+    console.log(`⚠️ Odmowa dostępu dla socket ${socket.id} - brak sesji!`);
+    return next(new Error("Brak dostępu - zaloguj się."));
+  }
+
+  console.log(`✅ Socket ${socket.id} - użytkownik: ${session.user}`);
+  next();
+});
+
 
 // Handle socket connections
 io.on('connection', (socket) => {
