@@ -91,8 +91,8 @@ app.get('/game', (req, res) => {
 });
 
 let players = {};
-
 let worldSettings = {};
+let tictoctest = {};
 
 function adjustWorldSize(width, height) {
     return {
@@ -138,8 +138,19 @@ io.on('connection', (socket) => {
     });
 
     socket.on('tictactoemove', (data) => {
-      console.log(`user sent ${data}!`);
-      data.newState = 'dupsko';
+      if(!tictoctest[data.cellid]) {
+        tictoctest[data.cellid] = 0;
+      } else {
+        tictoctest[data.cellid] = (tictoctest[data.cellid] + 1) % 3;
+      }
+      for(let i = 0; i < 9; i++) {
+        if(i === data.cellid) {
+          data[i] = 'emptyCell';
+        }
+        else {
+          data[i] = 'XCell';
+        }
+      }
       io.to('TicTacToeScene').emit('tictactoeresponse', data);
     });
   

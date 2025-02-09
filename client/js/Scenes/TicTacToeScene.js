@@ -14,6 +14,8 @@ class TicTacToeScene extends WorldScene {
     create() {
         super.create();
 
+        this.gameCells = {};
+
         // this.initSocketEvents();
         sessionManager.waitForId().then(() => {
             this.initializeScene();
@@ -32,27 +34,26 @@ class TicTacToeScene extends WorldScene {
         this.lobbyteleport = this.addTeleporterToScene(0, 0, 
             'TestLobbyScene', this.myID);
 
-        const s1 = new InteractiveObject()
+        for(let i = 0; i < 9; i++) {
+            const x = 300 + (i % 3) * 32;
+            const y = 100 + Math.floor(i / 3) * 32;
+            this.addGameCell(i, x, y);
+        }
+    }
+
+    addGameCell(id, x, y) {
+        const cell = new InteractiveObject()
             .setSprite(this.createSprite('emptyCell'))
-            .setPosition(300, 100)
+            .setPosition(x, y)
             .setCallback(() => { 
-                s1.setSprite(this.createSprite('XCell'));
+                sessionManager.emit('tictactoemove', {cellid: id});
              })
             .makeInteractive();
         sessionManager.on('tictactoeresponse', (data) => {
-            console.log('response received');
-            console.log(data);
-            s1.setSprite(this.createSprite('OCell'));
+            const newSymbol = data[id];
+            cell.setSprite(this.createSprite(newSymbol));
         });
-
-        const s2 = new InteractiveObject()
-            .setSprite(this.createSprite('XCell'))
-            .setPosition(332, 100)
-            .setCallback(() => { 
-                console.log('clicked s2'); 
-                sessionManager.emit('tictactoemove', {cellid: 2});
-            })
-            .makeInteractive();
+        this.gameCells[id] = cell;
     }
 
     update() {
