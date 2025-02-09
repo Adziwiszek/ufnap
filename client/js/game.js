@@ -23,6 +23,9 @@ const config = {
         }
     },
     parent: 'gameCanvas',
+    render: {
+        antialias: true,  // Enable anti-aliasing
+    },
 };
 
 // eslint-disable-next-line no-unused-vars, no-undef

@@ -9,17 +9,18 @@ window.addEventListener('load', () => {
 
     function sendMessage() {
         if (txtmessage.value.trim() !== '') {
-            sessionManager.emit('chatMessage', txtmessage.value);
+            sessionManager.emit('chatMessage', txtmessage.value, null); // tu wstawić nazwę gracza
             txtmessage.value = '';
         }
     };
 
 
-    sessionManager.on('chatMessage', (message) => {
+    sessionManager.on('chatMessage', (message, player_name=null) => {
         // console.log(`client received: ${message.data}`);
+        player_name = player_name || "default_name";
         if (message && message.data) {
             let msg = document.getElementById('messages');
-            msg.innerHTML += message.data + "<br/>";
+            msg.innerHTML += player_name + ": " + message.data + "<br/>";
         } else {
             console.error('Received undefined message', message);
         }
