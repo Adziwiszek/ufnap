@@ -236,7 +236,7 @@ io.on('connection', (socket) => {
       let result = game.attemptMove(pos, playerNumber);
       data.result = result;
       const board = flattenBoard(game.getBoard()); 
-      board.forEach((field, index) => {jj
+      board.forEach((field, index) => {
         if(field === '.') {
           data[index] = 'emptyCell';
         } else if(field === 'O') {
@@ -245,6 +245,7 @@ io.on('connection', (socket) => {
           data[index] = 'XCell';
         }
       });
+      data.currentPlayer = game.playersMark();
       
       io.to('TicTacToeScene').emit('tictactoeresponse', data);
     });

@@ -45,6 +45,12 @@ class TicTacToeScene extends WorldScene {
                 fill: '#000000', 
                 backgroundColor: '#FFFFFF',
             });
+            this.currentPlayer = this.add.text(200, 20, `current player: O`, {
+                fontSize: '24px',
+                fill: '#000000',
+                backgroundColor: '#FFFFFF',
+            });
+
             if(this.inQueueText) {
                 this.inQueueText.destroy();
                 delete this.inQueueText;
@@ -66,6 +72,12 @@ class TicTacToeScene extends WorldScene {
                 fill: '#000000', 
                 backgroundColor: '#FFFFFF',
             });
+        });
+
+        sessionManager.on('tictactoeresponse', (data) => {
+            if(this.currentPlayer) {
+                this.currentPlayer.text = `current player: ${data.currentPlayer}`;
+            }
         });
 
         this.lobbyteleport = this.addTeleporterToScene(0, 0, 
