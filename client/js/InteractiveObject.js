@@ -17,6 +17,7 @@ class InteractiveObject {
 
     setSprite(sprite) {
         this.sprite = sprite;
+        this.setPosition(this.x, this.y);
         return this;
     }
 

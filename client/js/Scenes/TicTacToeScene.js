@@ -35,13 +35,23 @@ class TicTacToeScene extends WorldScene {
         const s1 = new InteractiveObject()
             .setSprite(this.createSprite('emptyCell'))
             .setPosition(300, 100)
-            .setCallback(() => { console.log('clicked s1'); })
+            .setCallback(() => { 
+                s1.setSprite(this.createSprite('XCell'));
+             })
             .makeInteractive();
+        sessionManager.on('tictactoeresponse', (data) => {
+            console.log('response received');
+            console.log(data);
+            s1.setSprite(this.createSprite('OCell'));
+        });
 
         const s2 = new InteractiveObject()
             .setSprite(this.createSprite('XCell'))
             .setPosition(332, 100)
-            .setCallback(() => { console.log('clicked s2'); })
+            .setCallback(() => { 
+                console.log('clicked s2'); 
+                sessionManager.emit('tictactoemove', {cellid: 2});
+            })
             .makeInteractive();
     }
 

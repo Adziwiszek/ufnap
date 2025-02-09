@@ -137,8 +137,10 @@ io.on('connection', (socket) => {
         socket.broadcast.to(sceneName).emit('newPlayer', { id: socket.id, x: 100, y: 100 });
     });
 
-    socket.on('dupa', (data) => {
+    socket.on('tictactoemove', (data) => {
       console.log(`user sent ${data}!`);
+      data.newState = 'dupsko';
+      io.to('TicTacToeScene').emit('tictactoeresponse', data);
     });
   
     // Handle player movement
