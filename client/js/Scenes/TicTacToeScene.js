@@ -31,11 +31,17 @@ class TicTacToeScene extends WorldScene {
             this.worldHeight
         );
 
+        sessionManager.on('gameStart', (data) => {
+            console.log('game started!');
+            console.log(data);
+        });
+
         this.lobbyteleport = this.addTeleporterToScene(0, 0, 
             'TestLobbyScene', this.myID);
 
         const joinGameButton = this.createRoundedButton(700, 200, () => { 
                 console.log(`player ${this.myID} joined game`);
+                sessionManager.emit('joinGameQueue', {});
             }, 
             "Join game!", 
             { 

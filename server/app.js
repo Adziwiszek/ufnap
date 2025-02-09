@@ -92,6 +92,7 @@ app.get('/game', (req, res) => {
 
 let players = {};
 let worldSettings = {};
+let games = {};
 let tictoctest = {};
 
 function adjustWorldSize(width, height) {
@@ -112,7 +113,7 @@ io.on('connection', (socket) => {
         socket.join(sceneName);
 
         if(!players[socket.id]) {
-            players[socket.id] = { x: 99, y: 100, currentRoom: sceneName};
+            players[socket.id] = { x: 99, y: 100, currentRoom: sceneName, subroom: null };
             console.log(`create player with id = ${socket.id}`);
         }
 
@@ -137,7 +138,45 @@ io.on('connection', (socket) => {
         socket.broadcast.to(sceneName).emit('newPlayer', { id: socket.id, x: 100, y: 100 });
     });
 
+    // Handle player joining gamequeue
+    socket.on('joinGameQueue', (data) => {
+      const player = players[socket.id];
+      const gameName = player.currentRoom;
+      // handle game cases (maybe move out to other functions)
+      if(gameName === 'TicTacToeScene') {
+        if(games[gameName].queue.length === 0 &&
+          !games[gameName].queue.includes(socket.id)
+        ) {
+          games[gameName].queue.push(socket.id);
+          console.log('added player to the queue')
+        } else {
+          const player1Id = games[gameName].queue.pop();
+          const player2Id = socket.id;
+          // Create new game instance
+          const gameId = `game_${Date.now()}`;
+          games[gameName].instances[gameId] = {
+              players: [player1Id, player2Id],
+              currentTurn: player1Id
+          };
+
+          io.to(player1Id).emit('gameStart', { 
+              gameId: gameId,
+              symbol: 'X',
+              opponentId: player2Id
+          });
+          io.to(player2Id).emit('gameStart', {
+              gameId: gameId, 
+              symbol: 'O',
+              opponentId: player1Id
+          });
+
+          console.log(`Game started between ${player1Id} and ${player2Id}`);
+        }
+      }
+    });
+
     socket.on('tictactoemove', (data) => {
+      // mock response, change to actual game logic
       if(!tictoctest[data.cellid]) {
         tictoctest[data.cellid] = 0;
       } else {
@@ -195,7 +234,7 @@ io.on('connection', (socket) => {
             id: socket.id, 
             data: data
         }); 
-    })
+    });
     // Handle player changing rooms
     socket.on('changeRoom', ({ newRoom, outX, outY }) => {
         console.log('player is exiting current room!');
@@ -226,6 +265,10 @@ server.listen(3000, () => {
     worldSettings['TestLobbyScene'] = adjustWorldSize(1000, 1000);
     worldSettings['HouseScene'] = adjustWorldSize(2000, 500);
     worldSettings['TicTacToeScene'] = adjustWorldSize(200, 200);
+    games['TicTacToeScene'] = {
+      queue: [],
+      instances: {}
+    };
     // var host = server.address().address;
     var port = server.address().port;
     console.log('Listening at http:/localhost:%s', port);
