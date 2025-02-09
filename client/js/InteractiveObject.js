@@ -1,22 +1,37 @@
 import sessionManager from '../SessionManager.js';
 
 class InteractiveObject {
-    constructor(x, y, sprite) {
-        this.sprite = sprite;
-        this.setPosition(x, y);    
+    constructor(x, y) {
+        this.setPosition(x, y);
     }
 
     setPosition(x, y) {
         this.x = x;
         this.y = y;
-        if (this.sprite) {
-            this.sprite.setPosition(x, y);
+        if(this.sprite) {
+            this.sprite.x = x;
+            this.sprite.y = y;
         }
+        return this;
     }
 
-    addServerEventSender(name, data) {
-        this.callback = () => sessionManager.emit(name, data);
-    }    
+    setSprite(sprite) {
+        this.sprite = sprite;
+        return this;
+    }
+
+    setCallback(callback) {
+        this.callback = callback;
+        return this;
+    }
+
+    makeInteractive() {
+        if(!this.sprite) return;
+
+        this.sprite.setInteractive();
+        this.sprite.on('pointerdown', this.callback);
+        return this;
+    }
 }
 
-export default InteractiveObject
+export { InteractiveObject };

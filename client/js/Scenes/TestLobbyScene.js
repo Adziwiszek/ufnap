@@ -1,6 +1,6 @@
 import WorldScene from './WorldScene.js';
 import sessionManager from '../SessionManager.js';
-import InteractiveObject from '../InteractiveObject.js';
+import {InteractiveObject} from '../InteractiveObject.js';
 
 class TestLobbyScene extends WorldScene {
     constructor () {
@@ -23,23 +23,18 @@ class TestLobbyScene extends WorldScene {
     initializeScene() {
         this.cameras.main.setZoom(1.4);
 
-        const map = this.make.tilemap({ 
-            width: 224, 
-            height: 224, 
-            tileWidth: 32, 
-            tileHeight: 32 
-        });
-        const tiles = map.addTilesetImage('grass_tileset', null, 32, 32);
+        this.createRandomBackgroundFromTileset(
+            'grass_tileset', 
+            2,
+            this.worldWidth, 
+            this.worldHeight
+        );
         
-        const layer = map.createBlankLayer('layer1', tiles);
-        layer.randomize(0, 0, map.width, map.height, [ 0, 1]);
+        this.houseTeleporter = this.addTeleporterToScene(400, 400, 
+            'HouseScene', this.myID, { outX: 100, outY: 100 });
 
-        this.houseTeleporter = this.addTeleporterToScene(400, 400, 'HouseScene', this.myID);
-
-
-        const testsprite = this.physics.add.sprite(300, 20, 'player');
-        this.testinter = new InteractiveObject(300, 20, testsprite);
-        this.testinter.addServerEventSender('dupa', { pid: this.myID });
+        this.game1teleporter = this.addTeleporterToScene(400, 600, 
+            'TicTacToeScene', this.myID);
     }
 
     update() {

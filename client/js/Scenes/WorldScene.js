@@ -1,6 +1,7 @@
 import {Player, bubbleTextPadding} from './../player.js';
 import {addTeleporter} from './../SceneTeleporter.js';
 import sessionManager from './../SessionManager.js';
+import {InteractiveObject} from './../InteractiveObject.js';
 
 const maxTextRow = 20;
 
@@ -36,6 +37,8 @@ class WorldScene extends Phaser.Scene {
         }
         this.messages = {};
 
+        this.objects = {};
+
         this.worldWidth = 1024;
         this.worldHeight = 1024;
         this.msgCounter = 0;
@@ -45,7 +48,6 @@ class WorldScene extends Phaser.Scene {
 
         sessionManager.connect(this.scene.key);
 
-        // this.initSocketEvents();
         sessionManager.on('initMessage', this.initPlayer.bind(this));
         sessionManager.on('playerMoved', this.updatePlayerPosition.bind(this));
         sessionManager.on('newPlayer', this.handleAddingNewPlayer.bind(this));
@@ -53,7 +55,18 @@ class WorldScene extends Phaser.Scene {
         sessionManager.on('chatMessage', this.handlePlayerMessage.bind(this));
         sessionManager.on('playerDisconnected', this.handlePlayerDisconnected.bind(this));
 
-        this.coom = 42;
+        const sceneNameText = this.add.text(
+            200, 
+            100, 
+            this.scene.key, 
+            { 
+                fontSize: '32px', 
+                fill: '#000',
+                backgroundColor: '#fff',
+            },
+        )
+            .setDepth(3000)
+            .setScrollFactor(0);
     }
 
     update() {
@@ -70,11 +83,47 @@ class WorldScene extends Phaser.Scene {
         }
     }
 
-    addTeleporterToScene(x, y, newSceneName, playerid) {
+    createRandomBackgroundFromTileset(tilesetName, numberOfTiles, width, height) {
+        width = width/32;
+        height = height/32;
+        const map = this.make.tilemap({ 
+            width: width, 
+            height: height, 
+            tileWidth: 32, 
+            tileHeight: 32 
+        });
+        const tiles = map.addTilesetImage(tilesetName, null, 32, 32);
+        
+        const layer = map.createBlankLayer('layer1', tiles);
+        let range = (n) => {
+            let arr = [];
+            for(let i = 0; i < n; i++) {
+                arr.push(i);
+            }
+            return arr;
+        }
+        layer.randomize(0, 0, map.width, map.height, range(numberOfTiles));
+    }
+
+    createSprite(spriteName, x=0, y=0) {
+        const sprite = this.physics.add.sprite(x, y, spriteName);
+        return sprite;
+    }
+
+    addInteractiveObject(
+        x, y, 
+        name, 
+        color=0x0000ff) 
+        {
+        const obj = this.add.rectangle(x, y, 32, 32, color);
+        this.objects[name] = interactiveObject;
+    }
+
+    addTeleporterToScene(x, y, newSceneName, playerid, {outX, outY}={}) {
         const teleporter = addTeleporter(
             this, 
             () => { 
-                this.handleSwitchingToNewScene(newSceneName);
+                this.handleSwitchingToNewScene(newSceneName, outX, outY);
             }, 
             {x: x, y: y}
         );
@@ -250,6 +299,7 @@ class WorldScene extends Phaser.Scene {
         this.myID = message.id;
         this.addNewPlayer(message.x, message.y, message.id);
         this.focusCamera(message.id);
+        this.updateWorldSize(message.worldHeight, message.worldWidth); 
     }
 
     updatePlayerPosition(message) {
@@ -305,7 +355,7 @@ class WorldScene extends Phaser.Scene {
         delete this.players[id];
     }
 
-    handleSwitchingToNewScene(sceneName) {
+    handleSwitchingToNewScene(sceneName, outX, outY) {
         for(let id in this.players) {
             this.deletePlayer(id);
         }
@@ -318,8 +368,8 @@ class WorldScene extends Phaser.Scene {
         sessionManager.removeAllListeners('playerDisconnected');
         sessionManager.removeAllListeners('changeRoom');
 
-        sessionManager.emit('changeRoom', { newRoom: sceneName });
-
+        sessionManager.emit('changeRoom', { newRoom: sceneName, outX: outX, outY: outY });
+        sessionManager.resetIdPromise();
 
         this.scene.start(sceneName, { myID: this.myID }); 
     }

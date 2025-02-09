@@ -43,10 +43,11 @@ class SessionManager {
     }
 
     emit(eventName, data) {
-        if (!this.isConnected) {
-            console.warn(`Cannot emit ${eventName}: Not connected`);
-            return;
-        }
+        // console.log(`${this.isConnected}`);
+        // if (!this.isConnected) {
+        //     console.warn(`Cannot emit ${eventName}: Not connected`);
+        //     return;
+        // }
         this.socket.emit(eventName, data);
     }
 
