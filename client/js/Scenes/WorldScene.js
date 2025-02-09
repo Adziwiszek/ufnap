@@ -1,5 +1,7 @@
 import {Player, bubbleTextPadding} from './../player.js';
+import {addTeleporter} from './../SceneTeleporter.js';
 import sessionManager from './../SessionManager.js';
+import {InteractiveObject} from './../InteractiveObject.js';
 
 const maxTextRow = 20;
 
@@ -17,15 +19,25 @@ class WorldScene extends Phaser.Scene {
         })
     }
 
+    init(data) {
+        this.myID = data.myID;
+    }
+
     preload ()
     {
 
     }
 
     create () {
-        this.players = {};
-        this.myID = null; 
+        if(!this.players) {
+            this.players = {};
+        }
+        if(!this.myID) {
+            this.myID = null; 
+        }
         this.messages = {};
+
+        this.objects = {};
 
         this.worldWidth = 1024;
         this.worldHeight = 1024;
@@ -36,7 +48,6 @@ class WorldScene extends Phaser.Scene {
 
         sessionManager.connect(this.scene.key);
 
-        // this.initSocketEvents();
         sessionManager.on('initMessage', this.initPlayer.bind(this));
         sessionManager.on('playerMoved', this.updatePlayerPosition.bind(this));
         sessionManager.on('newPlayer', this.handleAddingNewPlayer.bind(this));
@@ -44,7 +55,18 @@ class WorldScene extends Phaser.Scene {
         sessionManager.on('chatMessage', this.handlePlayerMessage.bind(this));
         sessionManager.on('playerDisconnected', this.handlePlayerDisconnected.bind(this));
 
-        this.coom = 42;
+        const sceneNameText = this.add.text(
+            200, 
+            100, 
+            this.scene.key, 
+            { 
+                fontSize: '32px', 
+                fill: '#000',
+                backgroundColor: '#fff',
+            },
+        )
+            .setDepth(3000)
+            .setScrollFactor(0);
     }
 
     update() {
@@ -59,6 +81,58 @@ class WorldScene extends Phaser.Scene {
         } else if (this.cursors.down.isDown) {
             sessionManager.emit('move', 'down');
         }
+    }
+
+    createRandomBackgroundFromTileset(tilesetName, numberOfTiles, width, height) {
+        width = width/32;
+        height = height/32;
+        const map = this.make.tilemap({ 
+            width: width, 
+            height: height, 
+            tileWidth: 32, 
+            tileHeight: 32 
+        });
+        const tiles = map.addTilesetImage(tilesetName, null, 32, 32);
+        
+        const layer = map.createBlankLayer('layer1', tiles);
+        let range = (n) => {
+            let arr = [];
+            for(let i = 0; i < n; i++) {
+                arr.push(i);
+            }
+            return arr;
+        }
+        layer.randomize(0, 0, map.width, map.height, range(numberOfTiles));
+    }
+
+    createSprite(spriteName, x=0, y=0) {
+        const sprite = this.physics.add.sprite(x, y, spriteName);
+        return sprite;
+    }
+
+    addInteractiveObject(
+        x, y, 
+        name, 
+        color=0x0000ff) 
+        {
+        const obj = this.add.rectangle(x, y, 32, 32, color);
+        this.objects[name] = interactiveObject;
+    }
+
+    addTeleporterToScene(x, y, newSceneName, playerid, {outX, outY}={}) {
+        const teleporter = addTeleporter(
+            this, 
+            () => { 
+                this.handleSwitchingToNewScene(newSceneName, outX, outY);
+            }, 
+            {x: x, y: y}
+        );
+        this.physics.add.collider(
+            teleporter.sprite,
+            this.players[playerid].sprite,
+            teleporter.callback
+        );
+        return teleporter; 
     }
 
     /**
@@ -225,6 +299,7 @@ class WorldScene extends Phaser.Scene {
         this.myID = message.id;
         this.addNewPlayer(message.x, message.y, message.id);
         this.focusCamera(message.id);
+        this.updateWorldSize(message.worldHeight, message.worldWidth); 
     }
 
     updatePlayerPosition(message) {
@@ -280,7 +355,7 @@ class WorldScene extends Phaser.Scene {
         delete this.players[id];
     }
 
-    handleSwitchingToNewScene(sceneName) {
+    handleSwitchingToNewScene(sceneName, outX, outY) {
         for(let id in this.players) {
             this.deletePlayer(id);
         }
@@ -293,12 +368,89 @@ class WorldScene extends Phaser.Scene {
         sessionManager.removeAllListeners('playerDisconnected');
         sessionManager.removeAllListeners('changeRoom');
 
-        sessionManager.emit('changeRoom', { newRoom: sceneName });
+        sessionManager.emit('changeRoom', { newRoom: sceneName, outX: outX, outY: outY });
+        sessionManager.resetIdPromise();
 
-        this.scene.start(sceneName); 
+        this.scene.start(sceneName, { myID: this.myID }); 
     }
 
+    createRoundedButton(x, y, callback, text, textOptions = {}) {
+        // Create container to hold all button elements
+        const container = this.add.container(x, y);
+        container.setDepth(3000).setScrollFactor(0);
 
+        // Default text options
+        const defaultTextOptions = {
+            color: '#000000',
+            fontSize: '16px',
+            backgroundColor: '#00FF00',  // Default background color
+            ...textOptions
+        };
+        const backgroundColor = defaultTextOptions.backgroundColor;
+        delete defaultTextOptions.backgroundColor; 
+
+        // Create text
+        const buttonText = this.add.text(0, 0, text, defaultTextOptions);
+        buttonText.setOrigin(0.5);  // Center the text
+
+        // Calculate button dimensions with padding
+        const padding = 20;
+        const width = buttonText.width + padding * 2;
+        const height = buttonText.height + padding * 2;
+
+        // Create shadow
+        const shadow = this.add.graphics();
+        shadow.fillStyle(0x000000, 0.3);  // Semi-transparent black
+        shadow.fillRoundedRect(-width/2 + 4, -height/2 + 4, width, height, 10);
+        if (shadow.postFX) {
+            shadow.postFX.addBlur(0, 4, 4, 1, 0x000000, 0);
+        }
+
+        // Create button background using the provided backgroundColor
+        const background = this.add.graphics();
+        const baseColor = parseInt(backgroundColor.replace('#', ''), 16);
+        background.fillStyle(baseColor, 1);
+        background.fillRoundedRect(-width/2, -height/2, width, height, 10);
+
+        // Create hit area for better interaction
+        const hitArea = new Phaser.Geom.Rectangle(-width/2, -height/2, width, height);
+        
+        // Add elements to container in correct order
+        container.add([shadow, background, buttonText]);
+
+        // Function to darken a hex color
+        const darkenColor = (color, percent) => {
+            const r = ((color >> 16) & 0xFF) * (1 - percent);
+            const g = ((color >> 8) & 0xFF) * (1 - percent);
+            const b = (color & 0xFF) * (1 - percent);
+            return (r << 16) | (g << 8) | b;
+        };
+
+        const changeBackgroundColor = (color) => {
+            background.clear();
+            background.fillStyle(color, 1);  // Slightly darker
+            background.fillRoundedRect(-width/2, -height/2, width, height, 10);
+        };
+        const hoverColor = darkenColor(baseColor, 0.1);
+        const clickColor = darkenColor(baseColor, 0.2);
+        // Make container interactive with color variations based on the provided backgroundColor
+        container.setInteractive(hitArea, Phaser.Geom.Rectangle.Contains)
+            .on('pointerover', () => {
+                changeBackgroundColor(hoverColor);
+            })
+            .on('pointerout', () => {
+                changeBackgroundColor(baseColor);
+            })
+            .on('pointerdown', () => {
+                changeBackgroundColor(clickColor);
+                if (callback) callback();
+            })
+            .on('pointerup', () => {
+                changeBackgroundColor(hoverColor);
+            });
+
+        return container;
+    }    
 }
 
 export default WorldScene;

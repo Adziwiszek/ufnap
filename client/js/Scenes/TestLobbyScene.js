@@ -1,11 +1,10 @@
 import WorldScene from './WorldScene.js';
-import {addTeleporter} from './../SceneTeleporter.js';
 import sessionManager from '../SessionManager.js';
+import {InteractiveObject} from '../InteractiveObject.js';
 
 class TestLobbyScene extends WorldScene {
     constructor () {
        super({key: 'TestLobbyScene'});
-       TestLobbyScene.instance = this;
     }
 
     preload() {
@@ -24,30 +23,18 @@ class TestLobbyScene extends WorldScene {
     initializeScene() {
         this.cameras.main.setZoom(1.4);
 
-        const map = this.make.tilemap({ 
-            width: 224, 
-            height: 224, 
-            tileWidth: 32, 
-            tileHeight: 32 
-        });
-        const tiles = map.addTilesetImage('grass_tileset', null, 32, 32);
+        this.createRandomBackgroundFromTileset(
+            'grass_tileset', 
+            2,
+            this.worldWidth, 
+            this.worldHeight
+        );
         
-        const layer = map.createBlankLayer('layer1', tiles);
-        layer.randomize(0, 0, map.width, map.height, [ 0, 1]);
+        this.houseTeleporter = this.addTeleporterToScene(400, 400, 
+            'HouseScene', this.myID, { outX: 100, outY: 100 });
 
-        // creating test teleporter
-        this.houseTeleporter = addTeleporter(
-            this, 
-            () => { 
-                this.handleSwitchingToNewScene('HouseScene');
-            }, 
-            {x: 400, y: 400}
-        );
-        this.physics.add.collider(
-            this.houseTeleporter.sprite,
-            this.players[this.myID].sprite,
-            this.houseTeleporter.callback
-        );
+        this.game1teleporter = this.addTeleporterToScene(400, 600, 
+            'TicTacToeScene', this.myID);
     }
 
     update() {
