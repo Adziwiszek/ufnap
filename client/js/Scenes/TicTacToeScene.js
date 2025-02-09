@@ -31,11 +31,70 @@ class TicTacToeScene extends WorldScene {
             this.worldHeight
         );
 
+        sessionManager.on('gameStart', (data) => {
+            console.log('game started!');
+            console.log(data);
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 222a207 (tictactoe working)
+            this.gameData = data;
+            this.add.text(20, 300, `1) ${data.symbol} - ${this.myID}`, {
+                fontSize: '24px', 
+                fill: '#000000', 
+                backgroundColor: '#FFFFFF',
+            });
+            this.player2 = this.add.text(20, 350, `2) ${data.opponentSymbol} - ${data.opponentId}`, {
+                fontSize: '24px', 
+                fill: '#000000', 
+                backgroundColor: '#FFFFFF',
+            });
+            this.currentPlayer = this.add.text(200, 20, `current player: O`, {
+                fontSize: '24px',
+                fill: '#000000',
+                backgroundColor: '#FFFFFF',
+            });
+
+            if(this.inQueueText) {
+                this.inQueueText.destroy();
+                delete this.inQueueText;
+            }
+        });
+
+        sessionManager.on('leftQueue', (data) => {
+            console.log('left the queue!');
+            if(this.inQueueText) {
+                this.inQueueText.destroy();
+                delete this.inQueueText;
+            }
+        });
+
+        sessionManager.on('addedToTheQueue', (data) => {
+            console.log('added to the queue!');
+            this.inQueueText = this.add.text(400, 20, 'Waiting for opponent...', {
+                fontSize: '24px', 
+                fill: '#000000', 
+                backgroundColor: '#FFFFFF',
+            });
+        });
+
+        sessionManager.on('tictactoeresponse', (data) => {
+            if(this.currentPlayer) {
+                this.currentPlayer.text = `current player: ${data.currentPlayer}`;
+            }
+=======
+>>>>>>> d4635df (added joining to game queue)
+        });
+
         this.lobbyteleport = this.addTeleporterToScene(0, 0, 
             'TestLobbyScene', this.myID);
 
         const joinGameButton = this.createRoundedButton(700, 200, () => { 
+<<<<<<< HEAD
+=======
                 console.log(`player ${this.myID} joined game`);
+>>>>>>> d4635df (added joining to game queue)
+                sessionManager.emit('joinGameQueue', {});
             }, 
             "Join game!", 
             { 
@@ -46,7 +105,7 @@ class TicTacToeScene extends WorldScene {
         );
 
         const leaveGameButton = this.createRoundedButton(700, 270, () => { 
-                console.log(`player ${this.myID} joined game`);
+                sessionManager.emit('leaveGameQueue', {});
             }, 
             "Leave game:(", 
             { 
@@ -67,7 +126,7 @@ class TicTacToeScene extends WorldScene {
         const cell = new InteractiveObject()
             .setSprite(this.createSprite('emptyCell'))
             .setPosition(x, y)
-            .setCallback(() => { 
+            .setCallback(() => {
                 sessionManager.emit('tictactoemove', {cellid: id});
              })
             .makeInteractive();

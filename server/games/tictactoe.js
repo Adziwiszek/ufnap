@@ -17,12 +17,13 @@ class tictactoe {
         ]
     }
 
+
     getBoard(){
         return this.board;
     }
 
     isTie(){
-        if(isWin()) return false;
+        if(this.isWin()) return false;
         var f = false;
         for(var i=0;i<3;i++){
             for(var j=0;j<3;j++){
@@ -45,7 +46,7 @@ class tictactoe {
         ];
 
         for(const line of lines){
-            var res = checkLine(line[0], line[1], line[2]);
+            var res = this.checkLine(line[0], line[1], line[2]);
             if(res != 0) return res;
         }
 
@@ -85,3 +86,6 @@ class tictactoe {
         return 0;
     }
 }
+
+
+module.exports = tictactoe;
