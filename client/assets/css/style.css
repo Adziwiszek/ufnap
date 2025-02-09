@@ -1,5 +1,87 @@
+body {
+    background-color: #96cc99;
+    color: #000000;
+    font-family: 'Comic Sans MS';
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    width: 300px;
+
+    text-align:center;
+}
+
+
+
+input {
+    width: 90%;
+    padding: 10px;
+    margin-top: 5px;
+    background-color: #ffffff;
+    border: 1px solid #000000;
+    color: #000000;
+    border-radius: 5px;
+}
+
+button {
+    width: 50%;
+    padding: 10px;
+    background-color: #59b45c;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 20px;
+    
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.secondary-btn {
+    background-color: #555;
+}
+
+.secondary-btn:hover {
+    background-color: #666;
+}
+
+.hidden {
+    display: none;
+}
+
+
+
+h1 {
+    font-size: 2rem;
+    text-align: center;
+    margin: 20px;
+    color:#45a049
+}
+
+
+span.lewo {
+    display: block;
+    text-align: left;
+    margin: 5px;
+    margin-bottom: 0px;
+}
+
 body, html {
-    background-color: lightblue;
+    background-color: #96cc99;
+    font-family: 'Comic Sans MS';
+
     margin: 0;
     padding: 0;
     height: 100%;
@@ -20,21 +102,28 @@ canvas {
     flex-direction: row;
     height: 100%; 
     width: 100%; 
+
 }
 
 #chatWindow {
+    border-radius: 20px;
+    margin-right:10px;
+
     width: 300px; 
     height: 100%; 
     border: 1px solid #ccc;
     display: flex;
     flex-direction: column;
-    padding: 10px;
+    padding: 20px;
     box-sizing: border-box;
     background-color: #f8f8f8;
     overflow-y: auto; 
 }
 
 #messages {
+    border-radius: 20px;
+    padding:10px;
+
     flex-grow: 1;
     border: 1px solid #ddd;
     margin-top: 10px;
@@ -42,6 +131,9 @@ canvas {
 }
 
 #gameCanvas {
+    border-radius: 20px;
+    padding:10px;
+
     flex-grow: 1; 
     display: flex;
     justify-content: center;
