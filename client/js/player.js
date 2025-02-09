@@ -2,10 +2,11 @@ const bubbleTextPadding = {west: 10, east: 10, north:10, south: 10};
 const textBubbleLifeTime = 2000;
 
 class Player {
-    constructor(x, y, parentScene) {
+    constructor(x, y, parentScene, name=null) {
         this.parentScene = parentScene;
         this.x = x;
         this.y = y;
+        this.name = name || "default_name";
     }
 
     /**
@@ -19,6 +20,9 @@ class Player {
         this.y = y;
         if (this.sprite) {
             this.sprite.setPosition(x, y);
+        }
+        if (this.nameText) {
+            this.nameText.setPosition(x, y + 30); // Update name position
         }
         if (this.chatBubble) {
             // let bubbleBounds = this.chatBubble.bubble.getBounds();
@@ -38,6 +42,15 @@ class Player {
         }
         this.sprite = sprite;
         this.sprite.setDepth(500);
+    }
+
+    setNameText(nameText){
+        if(!nameText){
+            console.error('Player has been given null nameText');
+        }
+        this.nameText = nameText;
+        this.nameText.setText(this.name);
+        this.nameText.setDepth(510);
     }
 
     /**
