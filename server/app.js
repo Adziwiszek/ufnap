@@ -48,7 +48,7 @@ app.post('/login', async (req, res) => {
     const validPassword = await dbrepo.validatePassword(login, password);
     console.log(validPassword);
     if (validPassword) {
-      req.session.user = login;
+      req.session.user = {login};
       return res.redirect('/game');
     } else {
       return res.send(`
