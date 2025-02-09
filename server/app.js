@@ -229,17 +229,22 @@ io.on('connection', (socket) => {
               currentTurn: player1Id
           };
 
+          // player2 always starts!
           io.to(player1Id).emit('gameStart', { 
               gameId: gameId,
               symbol: 'X',
               opponentSymbol: 'O',
-              opponentId: player2Id
+              opponentId: player2Id,
+              player1Id: player1Id,
+              player2Id: player2Id,
           });
           io.to(player2Id).emit('gameStart', {
               gameId: gameId, 
               symbol: 'O',
               opponentSymbol: 'X',
-              opponentId: player1Id
+              opponentId: player1Id,
+              player1Id: player1Id,
+              player2Id: player2Id,
           });
           games[gameName].instances[gameId].game = new tictactoe();
           // player 1 is always X
@@ -294,6 +299,7 @@ io.on('connection', (socket) => {
         }
       });
       data.currentPlayer = game.playersMark();
+      data.currentPlayerId = playerNumber === 1 ? player2Id : player1Id;
       
       io.to('TicTacToeScene').emit('tictactoeresponse', data);
     });

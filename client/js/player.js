@@ -22,7 +22,7 @@ class Player {
         var bounds = this.sprite.getBounds();
         x = this.x = bounds.x + bounds.width/2;
         y = this.y = bounds.y + bounds.height/2;
-        console.log(x, y, this.x, this.y, bounds);
+        // console.log(x, y, this.x, this.y, bounds);
         if (this.nameText) {
             this.nameText.setPosition(x, y + 30); // Update name position
         }
