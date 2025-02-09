@@ -35,7 +35,13 @@ class TicTacToeScene extends WorldScene {
             const resultText = data.result;
             const endGameButton = this.createRoundedButton(600, 400, () => { 
                     endGameButton.destroy();
-                    //sessionManager.emit('joinGameQueue', {});
+                    this.player2.destroy();
+                    this.player1.destroy(); 
+                    this.currentPlayer.destroy();
+                    for(let i = 0; i < 9; i++) {
+                        this.gameCells[i].setSprite(this.createSprite('emptyCell'));
+                    }
+                    sessionManager.emit('quitGame', {});
                 }, 
                 resultText, 
                 { 
@@ -52,7 +58,7 @@ class TicTacToeScene extends WorldScene {
 
             // player symbols are messed up
             this.gameData = data;
-            this.add.text(20, 300,
+            this.player1 = this.add.text(20, 300,
              `1) ${data.player2.symbol} - ${data.player1.name}`, 
              {
                 fontSize: '24px', 

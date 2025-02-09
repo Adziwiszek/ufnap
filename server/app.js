@@ -178,7 +178,8 @@ io.on('connection', (socket) => {
                 'TicTacToeScene': {
                   gameId: null
                 }
-              }
+              },
+              isPlaying: false,
             };
 
             console.log(session?.user?.username || "default_name", "!!!");
@@ -210,6 +211,9 @@ io.on('connection', (socket) => {
     // Handle player joining gamequeue
     socket.on('joinGameQueue', (data) => {
       const player = players[socket.id];
+      if(player.isPlaying) {
+        return;
+      }
       const gameName = player.currentRoom;
       // handle game cases (maybe move out to other functions)
       if(gameName === 'TicTacToeScene') {
@@ -268,7 +272,9 @@ io.on('connection', (socket) => {
 
           
           players[player1Id].games[gameName].gameId = gameId;
+          players[player1Id].isPlaying = true;
           players[player2Id].games[gameName].gameId = gameId;
+          players[player2Id].isPlaying = true;
 
           console.log(`Game started between ${player1Id} and ${player2Id}`);
         }
@@ -288,6 +294,11 @@ io.on('connection', (socket) => {
         }
       }
     });
+
+    socket.on('quitGame', (data) => {
+      players[socket.id].isPlaying = false;
+    });
+
 
     socket.on('tictactoemove', (data) => {
       const gameid = players[socket.id].games['TicTacToeScene'].gameId;
